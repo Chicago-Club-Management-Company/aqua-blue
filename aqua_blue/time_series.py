@@ -1,3 +1,7 @@
+"""
+Module defining the TimeSeries object
+"""
+
 from typing import IO, Union
 from pathlib import Path
 import warnings

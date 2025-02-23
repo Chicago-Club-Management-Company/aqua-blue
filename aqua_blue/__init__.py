@@ -1,4 +1,4 @@
-__version__ = "0.0.20"
+__version__ = "0.1.0"
 __authors__ = [
     "Jacob Jeffries",
     "Ameen Mahmood",
@@ -12,11 +12,6 @@ __author_emails__ = [
     "samuel.joseph@chicagoclubteam.org"
 ]
 __url__ = "https://github.com/Chicago-Club-Management-Company/aqua-blue"
-
-from .reservoir import EchoStateNetwork as EchoStateNetwork
-from .reservoir import InstabilityWarning as InstabilityWarning
-from .time_series import TimeSeries as TimeSeries
-from .time_series import ShapeChangedWarning as ShapeChangedWarning
 
 from . import utilities as utilities
 from . import reservoirs as reservoirs

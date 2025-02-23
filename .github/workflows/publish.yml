@@ -108,14 +108,14 @@ jobs:
       - name: Install dependencies
         run: >-
           pip install .[dev]
-      - name: Build Sphinx documentation
+      - name: Build pdoc documentation
         run: >-
-          cd docs; sphinx-build -b html . _build/html
+          pdoc --html aqua_blue/ -o _build/
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sphinx-docs
-          path: docs/_build/html
+          name: pdoc-docs
+          path: _build/
 
   deploy-docs:
     needs:
@@ -128,8 +128,8 @@ jobs:
       - name: Download docs artifact
         uses: actions/download-artifact@v4
         with:
-          name: sphinx-docs
-          path: html/
+          name: pdoc-docs
+          path: _build/
 
       # deploy here
       - name: Deploy documentation
@@ -160,6 +160,8 @@ jobs:
   notify-discord:
     needs: pypi-publish
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Send webhook payload to Discord
         run: |
