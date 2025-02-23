@@ -158,26 +158,20 @@ jobs:
         uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc
 
   notify-discord:
-    needs:
-      - pypi-publish
+    needs: pypi-publish
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-
     steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: False
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.9"
-      - name: Install dependencies
-        run: >-
-          pip install .[dev]
-      - name: Notify channel
-        env:
-          KEY: ${{ secrets.DISCORD_BOT_API_KEY }}
-          CHANNEL: ${{ secrets.DISCORD_RELEASES_CHANNEL_ID }}
-        run: >-
-          python notifications/bot.py $KEY $CHANNEL
+      - name: Send webhook payload to Discord
+        run: |
+          curl -H "Content-Type: application/json" \
+               -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
+               -d '{
+                     "embeds": [
+                       {
+                         "title": "🚀 New push to main branch of aqua-blue! 🌊",
+                         "description": "Repository: '${{ github.repository }}' at commit: '${{ github.sha }}'",
+                         "color": 3447003,
+                         "url": "https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
+                       }
+                     ]
+                   }'

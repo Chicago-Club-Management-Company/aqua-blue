@@ -41,8 +41,7 @@ dev = [
     "mypy~=1.13.0",
     "sphinx~=7.4.7",
     "sphinx_rtd_theme~=3.0.2",
-    "sphinx_autodoc_typehints~=2.3.0",
-    "discord.py~=2.4.0"
+    "sphinx_autodoc_typehints~=2.3.0"
 ]
 
 [tool.hatch.version]
