@@ -1,3 +1,7 @@
+"""
+Module defining models, i.e. compositions of reservoir(s) and readout layers
+"""
+
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -10,13 +14,39 @@ from .time_series import TimeSeries
 @dataclass
 class Model:
 
-    reservoir: Reservoir
-    readout: Readout
-    final_time: float = field(init=False)
-    timestep: float = field(init=False)
-    initial_guess: np.typing.NDArray = field(init=False)
+    """
+    Model class for training and predicting
+    """
 
-    def train(self, input_time_series: TimeSeries, warmup: int = 0, rcond: float = 1.0e-10):
+    reservoir: Reservoir
+    """reservoir defining input -> reservoir mapping"""
+
+    readout: Readout
+    """readout defining reservoir -> output mapping"""
+
+    final_time: float = field(init=False)
+    """final time read during training. will be set at training"""
+
+    timestep: float = field(init=False)
+    """timestep read during training. will be set at training"""
+
+    initial_guess: np.typing.NDArray = field(init=False)
+    """initial guess read during training. will be set at training"""
+
+    def train(
+        self,
+        input_time_series: TimeSeries,
+        warmup: int = 0,
+        rcond: float = 1.0e-10
+    ):
+        """
+        Training method for model
+
+        Args:
+            input_time_series: TimeSeries instance to train on
+            warmup: Number of initial steps to ignore in training
+            rcond: Threshold for pseudo-inverse calculation. Increase if prediction is unstable
+        """
 
         if warmup >= len(input_time_series.times):
             raise ValueError(f"warmup must be smaller than number of timesteps ({len(input_time_series)})")
@@ -37,10 +67,15 @@ class Model:
 
     def predict(self, horizon: int) -> TimeSeries:
 
-        # initialize predictions and reservoir states to populate later
+        """
+        Model prediction method
+
+        Args:
+            horizon: number of steps to forecast into the future
+        """
+
         predictions = np.zeros((horizon, self.reservoir.input_dimensionality))
 
-        # perform feedback loop
         for i in range(horizon):
             if i == 0:
                 predictions[i, :] = self.readout.reservoir_to_output(
