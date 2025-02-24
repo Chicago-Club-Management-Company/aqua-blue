@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.5">
+<title>aqua_blue.time_series API documentation</title>
+<meta name="description" content="Module defining the TimeSeries object">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>aqua_blue.time_series</code></h1>
+</header>
+<section id="section-intro">
+<p>Module defining the TimeSeries object</p>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="aqua_blue.time_series.ShapeChangedWarning"><code class="flex name class">
+<span>class <span class="ident">ShapeChangedWarning</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ShapeChangedWarning(Warning):
+
+    &#34;&#34;&#34;
+    warn the user that TimeSeries.__post_init__ changed the shape of the dependent variable
+    &#34;&#34;&#34;</code></pre>
+</details>
+<div class="desc"><p>warn the user that TimeSeries.<strong>post_init</strong> changed the shape of the dependent variable</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Warning</li>
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+<dt id="aqua_blue.time_series.TimeSeries"><code class="flex name class">
+<span>class <span class="ident">TimeSeries</span></span>
+<span>(</span><span>dependent_variable: numpy.ndarray[typing.Any, numpy.dtype[numpy.floating]],<br>times: numpy.ndarray[typing.Any, numpy.dtype[numpy.floating]])</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@dataclass
+class TimeSeries:
+
+    &#34;&#34;&#34;
+    TimeSeries class defining a time series
+    &#34;&#34;&#34;
+
+    dependent_variable: np.typing.NDArray[np.floating]
+    times: np.typing.NDArray[np.floating]
+
+    def __post_init__(self):
+
+        timesteps = np.diff(self.times)
+        if not np.isclose(np.std(timesteps), 0.0):
+            raise ValueError(&#34;TimeSeries.times must be uniformly spaced&#34;)
+        if np.isclose(np.mean(timesteps), 0.0):
+            raise ValueError(&#34;TimeSeries.times must have a timestep greater than zero&#34;)
+
+        if len(self.dependent_variable.shape) == 1:
+            num_steps = len(self.dependent_variable)
+            self.dependent_variable = self.dependent_variable.reshape(num_steps, 1)
+            warnings.warn(
+                f&#34;TimeSeries.dependent_variable should have shape (number of steps, dimensionality). &#34;
+                f&#34;The shape has been changed from {(num_steps,)} to {self.dependent_variable.shape}&#34;
+            )
+
+    def save(self, fp: Union[IO, str, Path], header: str = &#34;&#34;, delimiter=&#34;,&#34;):
+
+        &#34;&#34;&#34;
+        Method to save a time series
+
+        Args:
+            fp (Union[IO, str, Path]):
+                The file-like object, path name, or Path in which to save the TimeSeries instance
+
+            header (str):
+                An optional header. Defaults to the empty string
+
+            delimiter (str):
+                The delimiting character in the save file. Defaults to a comma
+
+        &#34;&#34;&#34;
+        np.savetxt(
+            fp,
+            np.vstack((self.times, self.dependent_variable.T)).T,
+            delimiter=delimiter,
+            header=header,
+            comments=&#34;&#34;
+        )
+
+    @property
+    def num_dims(self) -&gt; int:
+
+        &#34;&#34;&#34;
+        The dimensionality of the time series
+
+        Returns:
+            int: The dimensionality of the time series
+        &#34;&#34;&#34;
+
+        return self.dependent_variable.shape[1]
+
+    @classmethod
+    def from_csv(cls, fp: Union[IO, str, Path], time_index: int = 0):
+
+        &#34;&#34;&#34;
+        Method for loading in a TimeSeries instance from a comma-separated value (csv) file
+
+        Args:
+            fp (Union[IO, str, Path]):
+                The file-like object, path name, or Path in which to read
+
+            time_index (int):
+                The column index corresponding to the time column. Defaults to 0
+
+        Returns:
+            TimeSeries: A TimeSeries instance populated by data from the csv file
+        &#34;&#34;&#34;
+
+        data = np.loadtxt(fp, delimiter=&#34;,&#34;)
+
+        return cls(
+            dependent_variable=np.delete(data, obj=time_index, axis=1),
+            times=data[:, time_index]
+        )
+
+    @property
+    def timestep(self) -&gt; float:
+
+        &#34;&#34;&#34;
+        The physical timestep of the time series
+
+        Returns:
+            int: The physical timestep of the time series
+        &#34;&#34;&#34;
+
+        return self.times[1] - self.times[0]
+
+    def __eq__(self, other) -&gt; bool:
+        return bool(np.all(self.times == other.times) and np.all(
+            np.isclose(self.dependent_variable, other.dependent_variable)
+        ))
+
+    def __getitem__(self, key):
+
+        return TimeSeries(self.dependent_variable[key], self.times[key])
+
+    def __setitem__(self, key, value):
+
+        if not isinstance(value, TimeSeries):
+            raise TypeError(&#34;Value must be a TimeSeries object&#34;)
+        if isinstance(key, slice) and key.stop &gt; len(self.dependent_variable):
+            raise ValueError(&#34;Slice stop index out of range&#34;)
+        if isinstance(key, int) and key &gt;= len(self.dependent_variable):
+            raise ValueError(&#34;Index out of range&#34;)
+
+        self.dependent_variable[key] = value.dependent_variable
+        self.times[key] = value.times
+
+    def __add__(self, other):
+
+        if not len(self.times) == len(other.times):
+            raise ValueError(&#34;can only add TimeSeries instances that have the same number of timesteps&#34;)
+
+        if not np.all(self.times == other.times):
+            raise ValueError(&#34;can only add TimeSeries instances that span the same times&#34;)
+
+        return TimeSeries(
+            dependent_variable=self.dependent_variable + other.dependent_variable,
+            times=self.times
+        )
+
+    def __sub__(self, other):
+
+        if not len(self.times) == len(other.times):
+            raise ValueError(&#34;can only subtract TimeSeries instances that have the same number of timesteps&#34;)
+
+        if not np.all(self.times == other.times):
+            raise ValueError(&#34;can only subtract TimeSeries instances that span the same times&#34;)
+
+        return TimeSeries(
+            dependent_variable=self.dependent_variable - other.dependent_variable,
+            times=self.times
+        )
+
+    def __rshift__(self, other):
+
+        if self.times[-1] &gt;= other.times[0]:
+            raise ValueError(&#34;can only concatenate TimeSeries instances with non-overlapping time values&#34;)
+
+        return TimeSeries(
+            dependent_variable=np.vstack((self.dependent_variable, other.dependent_variable)),
+            times=np.hstack((self.times, other.times))
+        )
+
+    def __len__(self):
+
+        return len(self.times)</code></pre>
+</details>
+<div class="desc"><p>TimeSeries class defining a time series</p></div>
+<h3>Class variables</h3>
+<dl>
+<dt id="aqua_blue.time_series.TimeSeries.dependent_variable"><code class="name">var <span class="ident">dependent_variable</span> : numpy.ndarray[typing.Any, numpy.dtype[numpy.floating]]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="aqua_blue.time_series.TimeSeries.times"><code class="name">var <span class="ident">times</span> : numpy.ndarray[typing.Any, numpy.dtype[numpy.floating]]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Static methods</h3>
+<dl>
+<dt id="aqua_blue.time_series.TimeSeries.from_csv"><code class="name flex">
+<span>def <span class="ident">from_csv</span></span>(<span>fp: <class 'IO'> | str | pathlib.Path, time_index: int = 0)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Method for loading in a TimeSeries instance from a comma-separated value (csv) file</p>
+<h2 id="args">Args</h2>
+<p>fp (Union[IO, str, Path]):
+The file-like object, path name, or Path in which to read</p>
+<p>time_index (int):
+The column index corresponding to the time column. Defaults to 0</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="aqua_blue.time_series.TimeSeries" href="#aqua_blue.time_series.TimeSeries">TimeSeries</a></code></dt>
+<dd>A TimeSeries instance populated by data from the csv file</dd>
+</dl></div>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="aqua_blue.time_series.TimeSeries.num_dims"><code class="name">prop <span class="ident">num_dims</span> : int</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def num_dims(self) -&gt; int:
+
+    &#34;&#34;&#34;
+    The dimensionality of the time series
+
+    Returns:
+        int: The dimensionality of the time series
+    &#34;&#34;&#34;
+
+    return self.dependent_variable.shape[1]</code></pre>
+</details>
+<div class="desc"><p>The dimensionality of the time series</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>int</code></dt>
+<dd>The dimensionality of the time series</dd>
+</dl></div>
+</dd>
+<dt id="aqua_blue.time_series.TimeSeries.timestep"><code class="name">prop <span class="ident">timestep</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def timestep(self) -&gt; float:
+
+    &#34;&#34;&#34;
+    The physical timestep of the time series
+
+    Returns:
+        int: The physical timestep of the time series
+    &#34;&#34;&#34;
+
+    return self.times[1] - self.times[0]</code></pre>
+</details>
+<div class="desc"><p>The physical timestep of the time series</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>int</code></dt>
+<dd>The physical timestep of the time series</dd>
+</dl></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="aqua_blue.time_series.TimeSeries.save"><code class="name flex">
+<span>def <span class="ident">save</span></span>(<span>self, fp: <class 'IO'> | str | pathlib.Path, header: str = '', delimiter=',')</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def save(self, fp: Union[IO, str, Path], header: str = &#34;&#34;, delimiter=&#34;,&#34;):
+
+    &#34;&#34;&#34;
+    Method to save a time series
+
+    Args:
+        fp (Union[IO, str, Path]):
+            The file-like object, path name, or Path in which to save the TimeSeries instance
+
+        header (str):
+            An optional header. Defaults to the empty string
+
+        delimiter (str):
+            The delimiting character in the save file. Defaults to a comma
+
+    &#34;&#34;&#34;
+    np.savetxt(
+        fp,
+        np.vstack((self.times, self.dependent_variable.T)).T,
+        delimiter=delimiter,
+        header=header,
+        comments=&#34;&#34;
+    )</code></pre>
+</details>
+<div class="desc"><p>Method to save a time series</p>
+<h2 id="args">Args</h2>
+<p>fp (Union[IO, str, Path]):
+The file-like object, path name, or Path in which to save the TimeSeries instance</p>
+<p>header (str):
+An optional header. Defaults to the empty string</p>
+<p>delimiter (str):
+The delimiting character in the save file. Defaults to a comma</p></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="aqua_blue" href="index.html">aqua_blue</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="aqua_blue.time_series.ShapeChangedWarning" href="#aqua_blue.time_series.ShapeChangedWarning">ShapeChangedWarning</a></code></h4>
+</li>
+<li>
+<h4><code><a title="aqua_blue.time_series.TimeSeries" href="#aqua_blue.time_series.TimeSeries">TimeSeries</a></code></h4>
+<ul class="two-column">
+<li><code><a title="aqua_blue.time_series.TimeSeries.dependent_variable" href="#aqua_blue.time_series.TimeSeries.dependent_variable">dependent_variable</a></code></li>
+<li><code><a title="aqua_blue.time_series.TimeSeries.from_csv" href="#aqua_blue.time_series.TimeSeries.from_csv">from_csv</a></code></li>
+<li><code><a title="aqua_blue.time_series.TimeSeries.num_dims" href="#aqua_blue.time_series.TimeSeries.num_dims">num_dims</a></code></li>
+<li><code><a title="aqua_blue.time_series.TimeSeries.save" href="#aqua_blue.time_series.TimeSeries.save">save</a></code></li>
+<li><code><a title="aqua_blue.time_series.TimeSeries.times" href="#aqua_blue.time_series.TimeSeries.times">times</a></code></li>
+<li><code><a title="aqua_blue.time_series.TimeSeries.timestep" href="#aqua_blue.time_series.TimeSeries.timestep">timestep</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.5</a>.</p>
+</footer>
+</body>
+</html>
