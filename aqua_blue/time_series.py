@@ -2,9 +2,10 @@
 Module defining the TimeSeries object
 """
 
-from typing import IO, Union
+from typing import IO, Union, List
 from pathlib import Path
 import warnings
+from itertools import pairwise
 
 from dataclasses import dataclass
 import numpy as np
@@ -25,11 +26,15 @@ class TimeSeries:
     """
 
     dependent_variable: np.typing.NDArray[np.floating]
-    times: np.typing.NDArray[np.floating]
+    times: List[float]
 
     def __post_init__(self):
 
-        timesteps = np.diff(self.times)
+        if isinstance(self.times, np.ndarray):
+            self.times = self.times.tolist()
+
+        timesteps = [t2 - t1 for t1, t2 in pairwise(self.times)]
+
         if not np.isclose(np.std(timesteps), 0.0):
             raise ValueError("TimeSeries.times must be uniformly spaced")
         if np.isclose(np.mean(timesteps), 0.0):
@@ -97,10 +102,11 @@ class TimeSeries:
         """
 
         data = np.loadtxt(fp, delimiter=",")
+        times = data[:, time_index].tolist()
 
         return cls(
             dependent_variable=np.delete(data, obj=time_index, axis=1),
-            times=data[:, time_index]
+            times=times
         )
 
     @property
@@ -116,7 +122,7 @@ class TimeSeries:
         return self.times[1] - self.times[0]
 
     def __eq__(self, other) -> bool:
-        return bool(np.all(self.times == other.times) and np.all(
+        return all(t1 == t2 for t1, t2 in zip(self.times, other.times)) and bool(np.all(
             np.isclose(self.dependent_variable, other.dependent_variable)
         ))
 
@@ -165,11 +171,12 @@ class TimeSeries:
     def __rshift__(self, other):
 
         if self.times[-1] >= other.times[0]:
+            print(self.times[-1], other.times[0])
             raise ValueError("can only concatenate TimeSeries instances with non-overlapping time values")
 
         return TimeSeries(
             dependent_variable=np.vstack((self.dependent_variable, other.dependent_variable)),
-            times=np.hstack((self.times, other.times))
+            times=self.times + other.times
         )
 
     def __len__(self):

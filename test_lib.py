@@ -10,12 +10,13 @@ from aqua_blue import time_series, utilities, reservoirs, readouts, models
 @pytest.fixture
 def cosine_sine_series():
 
-    times = np.arange(10)
-    dependent_variables = np.vstack((np.cos(times), np.sin(times))).T
+    steps = list(range(10))
+
+    dependent_variables = np.vstack((np.cos(steps), np.sin(steps))).T
 
     return time_series.TimeSeries(
         dependent_variable=dependent_variables,
-        times=times
+        times=steps
     )
 
 
@@ -64,16 +65,20 @@ def test_can_add_time_series(cosine_sine_series):
 
     sine_cosine_series = deepcopy(cosine_sine_series)
     sine_cosine_series.dependent_variable[:, [0, 1]] = sine_cosine_series.dependent_variable[:, [1, 0]]
-    t = cosine_sine_series + sine_cosine_series
+    summed = cosine_sine_series + sine_cosine_series
 
-    assert np.all(t.dependent_variable == cosine_sine_series.dependent_variable + sine_cosine_series.dependent_variable)
-    assert np.all(t.times == cosine_sine_series.times) and np.all(cosine_sine_series.times == sine_cosine_series.times)
+    assert np.all(
+        summed.dependent_variable == cosine_sine_series.dependent_variable + sine_cosine_series.dependent_variable
+    )
+    assert all(t1 == t2 for t1, t2 in zip(summed.times, cosine_sine_series.times))
+    assert all(t1 == t2 for t1, t2 in zip(cosine_sine_series.times, sine_cosine_series.times))
 
 
 def test_time_series_addition_num_timesteps_error(cosine_sine_series):
 
     second_time_series = deepcopy(cosine_sine_series)
-    second_time_series.times = np.append(cosine_sine_series.times, cosine_sine_series.times[-1] + 1)
+    dt = cosine_sine_series.times[1] - cosine_sine_series.times[0]
+    second_time_series.times = np.append(cosine_sine_series.times, cosine_sine_series.times[-1] + dt)
 
     with pytest.raises(ValueError):
         _ = cosine_sine_series + second_time_series
@@ -82,7 +87,7 @@ def test_time_series_addition_num_timesteps_error(cosine_sine_series):
 def test_time_series_addition_spanning_error(cosine_sine_series):
 
     second_time_series = deepcopy(cosine_sine_series)
-    second_time_series.times = 0.5 * cosine_sine_series.times
+    second_time_series.times = [t + 1.0 for t in cosine_sine_series.times]
     with pytest.raises(ValueError):
         _ = cosine_sine_series + second_time_series
 
@@ -100,7 +105,9 @@ def test_can_subtract_time_series(cosine_sine_series):
 def test_can_concatenate_time_series(cosine_sine_series):
 
     second_time_series = deepcopy(cosine_sine_series)
-    second_time_series.times = cosine_sine_series.times[-1] + cosine_sine_series.times + 1
+    dt = second_time_series.timestep
+    num_steps = len(second_time_series)
+    second_time_series.times = [cosine_sine_series.times[-1] + step * dt for step in range(1, num_steps + 1)]
     t = cosine_sine_series >> second_time_series
 
     assert np.all(t.dependent_variable == np.concatenate((cosine_sine_series.dependent_variable, second_time_series.dependent_variable)))
@@ -110,7 +117,6 @@ def test_can_concatenate_time_series(cosine_sine_series):
 def test_time_series_concatenation_overlap_error(cosine_sine_series):
 
     second_time_series = deepcopy(cosine_sine_series)
-    second_time_series.times = cosine_sine_series.times[-1] + cosine_sine_series.times
 
     with pytest.raises(ValueError):
         _ = cosine_sine_series >> second_time_series

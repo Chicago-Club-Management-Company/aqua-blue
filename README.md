@@ -1,8 +1,11 @@
 # aqua-blue
 Lightweight and basic reservoir computing library
 
+[![Custom shields.io](https://img.shields.io/badge/docs-brightgreen?logo=github&logoColor=green&label=gh-pages)](https://chicago-club-management-company.github.io/aqua-blue/)
+
+
 [![PyPI version shields.io](https://img.shields.io/pypi/v/aqua-blue.svg)](https://pypi.python.org/pypi/aqua-blue/)
-[![PyPI pyversions](https://img.shields.io/pypi/pyversions/aqua-blue.svg)](https://pypi.python.org/pypi/aqua-blue/)
+[![PyPI pyversions shields.io](https://img.shields.io/pypi/pyversions/aqua-blue.svg)](https://pypi.python.org/pypi/aqua-blue/)
 
 ## 🌊 What is aqua-blue?
 

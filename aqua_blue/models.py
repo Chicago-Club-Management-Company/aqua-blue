@@ -88,5 +88,5 @@ class Model:
 
         return TimeSeries(
             dependent_variable=predictions,
-            times=self.final_time + self.timestep + np.linspace(0, horizon * self.timestep, horizon)
+            times=[self.final_time + step * self.timestep for step in range(1, horizon + 1)]
         )
