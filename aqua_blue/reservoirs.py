@@ -32,8 +32,8 @@ class Reservoir(ABC):
     """dimensionality of the reservoir state, equivalently the reservoir size"""
 
     @abstractmethod
-    def input_to_reservoir(self, input_state: np.typing.NDArray[np.floating]) -> np.typing.NDArray[np.floating]:
-
+    def _update_reservoir(self, input_state: np.typing.NDArray[np.floating]) -> np.typing.NDArray[np.floating]:
+        
         """
         Map from input state to reservoir state
 
@@ -86,20 +86,25 @@ class DynamicalReservoir(Reservoir):
                 size=(self.reservoir_dimensionality, self.input_dimensionality)
             )
         if self.w is None: 
-            self.w = self.generator.uniform(
-                low=-0.5, 
-                high=0.5, 
-                size=(self.reservoir_dimensionality, self.reservoir_dimensionality)   
-            )
+            self.w = np.random.randn(self.reservoir_dimensionality, self.reservoir_dimensionality)
+        mask = np.random.rand(*self.w.shape) < 0.9
+        self.w *= mask
+        
+        spectral_radius = np.max(np.abs(np.linalg.eigvals(self.w)))
+        self.w /= (spectral_radius / 0.95)
+        print(spectral_radius)
+        self.res_state = np.zeros(self.reservoir_dimensionality)
     
-    def input_to_reservoir(self, input_state: np.typing.NDArray[np.floating]) -> np.typing.NDArray[np.floating]:
+    def _update_reservoir(self, input_state: np.typing.NDArray[np.floating]) -> np.typing.NDArray[np.floating]:
         
         """
-        Map from input state to reservoir state via y_t = f(w_in @ x_t)
+        Map from input state to reservoir state via y_t = f(w_in @ x_t + w @ y_t-1)
         
         Args:
             input_state: input state to map to reservoir state
         """
         
         assert isinstance(self.w_in, np.ndarray)
-        return self.activation_function(self.w_in @ input_state)
+        assert isinstance(self.w, np.ndarray)
+        self.res_state = self.activation_function(self.w_in @ input_state + self.w @ self.res_state)
+        return self.res_state
