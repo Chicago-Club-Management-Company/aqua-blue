@@ -1,26 +1,24 @@
 import numpy as np
 import aqua_blue
-import matplotlib.pyplot as plt
-
+import matplotlib.pyplot as plt 
+from scipy.integrate import solve_ivp
+from loktavolterra import lv
 def main():
-
-    # generate arbitrary two-dimensional time series
-    # y_1(t) = cos(t), y_2(t) = sin(t)
-    # resulting dependent variable has shape (number of timesteps, 2)
-    t = np.linspace(0, 4.0 * np.pi, 10_000)
-    y = np.vstack((2.0 * np.cos(t) + 1, 5.0 * np.sin(t) - 1)).T
-
+    
+    y = lv(0, 1000, 10_000)
+    t = np.linspace(0, 1000, 10_000)
+    
     # create time series object to feed into echo state network
     time_series = aqua_blue.time_series.TimeSeries(dependent_variable=y, times=t)
-
+    
     # normalize
     normalizer = aqua_blue.utilities.Normalizer()
     time_series = normalizer.normalize(time_series)
-
+    
     # make model
     model = aqua_blue.models.Model(
         reservoir=aqua_blue.reservoirs.DynamicalReservoir(
-            reservoir_dimensionality=100,
+            reservoir_dimensionality=1000,
             input_dimensionality=2
         ),
         readout=aqua_blue.readouts.LinearReadout()
@@ -28,19 +26,15 @@ def main():
     model.train(time_series)
     prediction = model.predict(horizon=1_000)
     prediction = normalizer.denormalize(prediction)
-
-    actual_future = np.vstack((
-        (2.0 * np.cos(prediction.times) + 1, 5.0 * np.sin(prediction.times) - 1)
-    )).T
-    root_mean_square_error = np.sqrt(
-        np.mean((actual_future - prediction.dependent_variable) ** 2)
-    )
+    
+    actual_future = lv(prediction.times[0], prediction.times[-1], 1_000)
+    
     plt.plot(prediction.times, actual_future)
+    plt.xlabel('t')
     plt.plot(prediction.times, prediction.dependent_variable)
-    plt.legend(['actual_x', 'actual_y', 'predicted_x', 'predicted_y'])
+    plt.legend(['actual_x', 'actual_y', 'predicted_x', 'predicted_y'], shadow=True)
+    plt.title('Lotka-Volterra System')
     plt.show()
-
-
 if __name__ == "__main__":
 
     main()
