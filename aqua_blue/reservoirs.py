@@ -89,11 +89,10 @@ class DynamicalReservoir(Reservoir):
             self.w = np.random.randn(self.reservoir_dimensionality, self.reservoir_dimensionality)
         mask = np.random.rand(*self.w.shape) < 0.9
         self.w *= mask
-        
         spectral_radius = np.max(np.abs(np.linalg.eigvals(self.w)))
         self.w /= (spectral_radius / 0.95)
-        print(spectral_radius)
         self.res_state = np.zeros(self.reservoir_dimensionality)
+        print(np.linalg.matrix_norm(self.w))
     
     def _update_reservoir(self, input_state: np.typing.NDArray[np.floating]) -> np.typing.NDArray[np.floating]:
         

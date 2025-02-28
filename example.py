@@ -1,3 +1,4 @@
+
 import numpy as np
 import aqua_blue
 import matplotlib.pyplot as plt 
@@ -5,8 +6,8 @@ from scipy.integrate import solve_ivp
 from loktavolterra import lv
 def main():
     
-    y = lv(0, 1000, 10_000)
-    t = np.linspace(0, 1000, 10_000)
+    y = lv(0, 10, 1000)
+    t = np.linspace(0, 10, 1000)
     
     # create time series object to feed into echo state network
     time_series = aqua_blue.time_series.TimeSeries(dependent_variable=y, times=t)
@@ -18,7 +19,7 @@ def main():
     # make model
     model = aqua_blue.models.Model(
         reservoir=aqua_blue.reservoirs.DynamicalReservoir(
-            reservoir_dimensionality=1000,
+            reservoir_dimensionality=100,
             input_dimensionality=2
         ),
         readout=aqua_blue.readouts.LinearReadout()

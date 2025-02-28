@@ -3,7 +3,7 @@ from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
 
 
-def lv( t_start, t_end, no, alpha=0.1, beta=0.02, gamma=0.3, delta=0.01, x0=40, y0=9,): 
+def lv( t_start, t_end, no, alpha=0.1, beta=0.02, gamma=0.3, delta=0.01, x0=20, y0=9,): 
     # Lotka-Volterra equations
     def lotka_volterra(t, z, alpha, beta, delta, gamma):
         x, y = z
@@ -16,9 +16,3 @@ def lv( t_start, t_end, no, alpha=0.1, beta=0.02, gamma=0.3, delta=0.01, x0=40, 
     x, y = solution.y
     lotka_volterra_array = np.vstack((x, y)).T
     return lotka_volterra_array
-
-# y = lv(0, 1_000, 10_000)
-# t = np.linspace(0, 1_000, 10_000)
-
-# plt.plot(t, y)
-# plt.show()

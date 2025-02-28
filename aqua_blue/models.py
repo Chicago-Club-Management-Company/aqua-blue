@@ -47,7 +47,7 @@ class Model:
             warmup: Number of initial steps to ignore in training
             rcond: Threshold for pseudo-inverse calculation. Increase if prediction is unstable
         """
-
+        
         if warmup >= len(input_time_series.times):
             raise ValueError(f"warmup must be smaller than number of timesteps ({len(input_time_series)})")
         
@@ -55,7 +55,7 @@ class Model:
         independent_variables = np.zeros((time_series_array.shape[0]-1, self.reservoir.reservoir_dimensionality))
         for i in range(independent_variables.shape[0]): 
             independent_variables[i] = self.reservoir._update_reservoir(time_series_array[i])
-
+        
         dependent_variables = time_series_array[1:]
         if warmup > 0:
             independent_variables = independent_variables[warmup:]
@@ -66,18 +66,18 @@ class Model:
         self.timestep = input_time_series.timestep
         self.final_time = input_time_series.times[-1]
         self.initial_guess = time_series_array[-1, :]
-
+    
     def predict(self, horizon: int) -> TimeSeries:
-
+        
         """
         Model prediction method
-
+        
         Args:
             horizon: number of steps to forecast into the future
         """
-
+        
         predictions = np.zeros((horizon, self.reservoir.input_dimensionality))
-
+        
         for i in range(horizon):
             if i == 0: 
                 predictions[i, :] = self.readout.reservoir_to_output(
@@ -87,7 +87,7 @@ class Model:
             predictions[i, :] = self.readout.reservoir_to_output(
                 self.reservoir._update_reservoir(predictions[i-1, :])
             )
-
+        
         return TimeSeries(
             dependent_variable=predictions,
             times=self.final_time + self.timestep + np.linspace(0, horizon * self.timestep, horizon)
