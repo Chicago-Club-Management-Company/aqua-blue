@@ -2,10 +2,11 @@
 Module defining the TimeSeries object
 """
 
-from typing import IO, Union, List
+from typing import IO, Union, List, TypeVar, Generic
 from pathlib import Path
 import warnings
 from itertools import pairwise
+from datetime import datetime, timedelta
 
 from dataclasses import dataclass
 import numpy as np
@@ -18,22 +19,28 @@ class ShapeChangedWarning(Warning):
     """
 
 
+DatetimeLike = TypeVar("DatetimeLike", float, datetime)
+
+
 @dataclass
-class TimeSeries:
+class TimeSeries(Generic[DatetimeLike]):
 
     """
     TimeSeries class defining a time series
     """
 
     dependent_variable: np.typing.NDArray[np.floating]
-    times: List[float]
+    times: List[DatetimeLike]
 
     def __post_init__(self):
 
         if isinstance(self.times, np.ndarray):
-            self.times = self.times.tolist()
+            self.times = self.times.astype(float).tolist()
 
         timesteps = [t2 - t1 for t1, t2 in pairwise(self.times)]
+
+        if isinstance(timesteps[0], timedelta):
+            timesteps = [dt.total_seconds() for dt in timesteps]
 
         if not np.isclose(np.std(timesteps), 0.0):
             raise ValueError("TimeSeries.times must be uniformly spaced")
@@ -53,6 +60,8 @@ class TimeSeries:
         """
         Method to save a time series
 
+        TODO: implement for datetimes
+
         Args:
             fp (Union[IO, str, Path]):
                 The file-like object, path name, or Path in which to save the TimeSeries instance
@@ -64,6 +73,8 @@ class TimeSeries:
                 The delimiting character in the save file. Defaults to a comma
 
         """
+        if not isinstance(self.times[0], float):
+            raise NotImplementedError
         np.savetxt(
             fp,
             np.vstack((self.times, self.dependent_variable.T)).T,
@@ -110,7 +121,7 @@ class TimeSeries:
         )
 
     @property
-    def timestep(self) -> float:
+    def timestep(self) -> Union[float, timedelta]:
 
         """
         The physical timestep of the time series

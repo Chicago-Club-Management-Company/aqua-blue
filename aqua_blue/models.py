@@ -3,6 +3,8 @@ Module defining models, i.e. compositions of reservoir(s) and readout layers
 """
 
 from dataclasses import dataclass, field
+from typing import Union
+from datetime import datetime, timedelta
 
 import numpy as np
 
@@ -27,7 +29,7 @@ class Model:
     final_time: float = field(init=False)
     """final time read during training. will be set at training"""
 
-    timestep: float = field(init=False)
+    timestep: Union[float, timedelta] = field(init=False)
     """timestep read during training. will be set at training"""
 
     initial_guess: np.typing.NDArray[np.floating] = field(init=False)
@@ -87,7 +89,11 @@ class Model:
             predictions[i, :] = self.readout.reservoir_to_output(
                 self.reservoir.update_reservoir(predictions[i-1, :])
             )
-        
+
+        if isinstance(self.final_time, float) and not isinstance(self.timestep, float):
+            raise TypeError
+        if isinstance(self.final_time, datetime) and not isinstance(self.timestep, timedelta):
+            raise TypeError
         return TimeSeries(
             dependent_variable=predictions,
             times=[self.final_time + step * self.timestep for step in range(1, horizon + 1)]
