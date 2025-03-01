@@ -1,9 +1,22 @@
-
 import numpy as np
-import aqua_blue
-import matplotlib.pyplot as plt 
 from scipy.integrate import solve_ivp
-from loktavolterra import lv
+import matplotlib.pyplot as plt
+import aqua_blue
+
+def lv( t_start, t_end, no, alpha=0.1, beta=0.02, gamma=0.3, delta=0.01, x0=20, y0=9,): 
+    # Lotka-Volterra equations
+    def lotka_volterra(t, z, alpha, beta, delta, gamma):
+        x, y = z
+        dxdt = alpha * x - beta * x * y
+        dydt = delta * x * y - gamma * y
+        return [dxdt, dydt]
+    
+    t_eval = np.linspace(t_start, t_end, no)
+    solution = solve_ivp(lotka_volterra, [t_start, t_end], [x0, y0], t_eval=t_eval, args=(alpha, beta, delta, gamma))
+    x, y = solution.y
+    lotka_volterra_array = np.vstack((x, y)).T
+    return lotka_volterra_array
+
 def main():
     
     y = lv(0, 10, 1000)
@@ -18,7 +31,10 @@ def main():
     
     # make model
     model = aqua_blue.models.Model(
-        reservoir=aqua_blue.reservoirs.DynamicalReservoir(reservoir_dimensionality=100, input_dimensionality=2),
+        reservoir=aqua_blue.reservoirs.DynamicalReservoir(
+            reservoir_dimensionality=100,
+            input_dimensionality=2
+        ),
         readout=aqua_blue.readouts.LinearReadout()
     )
     model.train(time_series)
@@ -33,6 +49,7 @@ def main():
     plt.legend(['actual_x', 'actual_y', 'predicted_x', 'predicted_y'], shadow=True)
     plt.title('Lotka-Volterra System')
     plt.show()
+    
 if __name__ == "__main__":
-
+    
     main()

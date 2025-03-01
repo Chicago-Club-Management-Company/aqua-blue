@@ -32,8 +32,8 @@ class Reservoir(ABC):
     """dimensionality of the reservoir state, equivalently the reservoir size"""
 
     @abstractmethod
-    def input_to_reservoir(self, input_state: np.typing.NDArray[np.floating]) -> np.typing.NDArray[np.floating]:
-
+    def update_reservoir(self, input_state: np.typing.NDArray[np.floating]) -> np.typing.NDArray[np.floating]:
+        
         """
         Map from input state to reservoir state
 
@@ -64,32 +64,48 @@ class DynamicalReservoir(Reservoir):
     input linear mapping. must be shape (self.reservoir_dimensionality, self.input_dimensionality)
     if not defined at initialization, will be auto generated
     """
-
+    w_res: Optional[np.typing.NDArray[np.floating]] = None
+    """
+    reservoir linear mapping. must be shape (self.reservoir_dimensionality, self.reservoir_dimensionality)
+    if not defined at initialization, will be auto generated 
+    """
     activation_function: ActivationFunction = np.tanh
     """
     activation function f. defaults to np.tanh
     """
-
+    
     def __post_init__(self):
-
+        
         if self.generator is None:
             self.generator = np.random.default_rng(seed=0)
-
+        
         if self.w_in is None:
             self.w_in = self.generator.uniform(
                 low=-0.5,
                 high=0.5,
                 size=(self.reservoir_dimensionality, self.input_dimensionality)
             )
-
-    def input_to_reservoir(self, input_state: np.typing.NDArray[np.floating]) -> np.typing.NDArray[np.floating]:
-
+        if self.w_res is None: 
+            self.w_res = self.generator.uniform(
+                low=-0.5,
+                high=0.5, 
+                size=(self.reservoir_dimensionality, self.reservoir_dimensionality)
+            )
+        spectral_radius = np.linalg.norm(self.w_res, ord=2)
+        self.w_res /= (spectral_radius/0.95)
+        
+        self.res_state = np.zeros(self.reservoir_dimensionality)
+    
+    def update_reservoir(self, input_state: np.typing.NDArray[np.floating]) -> np.typing.NDArray[np.floating]:
+        
         """
-        Map from input state to reservoir state via y_t = f(w_in @ x_t)
-
+        Map from input state to reservoir state via y_t = f(w_in @ x_t + w_res @ y_t-1)
+        
         Args:
             input_state: input state to map to reservoir state
         """
-
+        
         assert isinstance(self.w_in, np.ndarray)
-        return self.activation_function(self.w_in @ input_state)
+        assert isinstance(self.w_res, np.ndarray)
+        self.res_state = self.activation_function(self.w_in @ input_state + self.w_res @ self.res_state)
+        return self.res_state
