@@ -224,8 +224,8 @@ class Reservoir(ABC):
     reservoir_dimensionality: int
     &#34;&#34;&#34;dimensionality of the reservoir state, equivalently the reservoir size&#34;&#34;&#34;
 
-    res_state: np.typing.NDArray = field(init=False)
-    &#34;&#34;&#34;internal reservoir state, should not be changed nor initialized&#34;&#34;&#34;
+    res_state: np.typing.NDArray[np.floating] = field(init=False)
+    &#34;&#34;&#34;reservoir state, necessary property when performing training loop&#34;&#34;&#34;
 
     @abstractmethod
     def update_reservoir(self, input_state: np.typing.NDArray[np.floating]) -&gt; np.typing.NDArray[np.floating]:
@@ -254,9 +254,9 @@ class Reservoir(ABC):
 <dd>
 <div class="desc"><p>dimensionality of the input state</p></div>
 </dd>
-<dt id="aqua_blue.reservoirs.Reservoir.res_state"><code class="name">var <span class="ident">res_state</span> : numpy.ndarray[typing.Any, numpy.dtype[+_ScalarType_co]]</code></dt>
+<dt id="aqua_blue.reservoirs.Reservoir.res_state"><code class="name">var <span class="ident">res_state</span> : numpy.ndarray[typing.Any, numpy.dtype[numpy.floating]]</code></dt>
 <dd>
-<div class="desc"><p>internal reservoir state, should not be changed nor initialized</p></div>
+<div class="desc"><p>reservoir state, necessary property when performing training loop</p></div>
 </dd>
 <dt id="aqua_blue.reservoirs.Reservoir.reservoir_dimensionality"><code class="name">var <span class="ident">reservoir_dimensionality</span> : int</code></dt>
 <dd>

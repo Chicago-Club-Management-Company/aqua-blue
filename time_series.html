@@ -72,7 +72,7 @@ el.replaceWith(d);
 </dd>
 <dt id="aqua_blue.time_series.TimeSeries"><code class="flex name class">
 <span>class <span class="ident">TimeSeries</span></span>
-<span>(</span><span>dependent_variable: numpy.ndarray[typing.Any, numpy.dtype[numpy.floating]],<br>times: numpy.ndarray[typing.Any, numpy.dtype[numpy.floating]])</span>
+<span>(</span><span>dependent_variable: numpy.ndarray[typing.Any, numpy.dtype[numpy.floating]],<br>times: List[float])</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -87,11 +87,15 @@ class TimeSeries:
     &#34;&#34;&#34;
 
     dependent_variable: np.typing.NDArray[np.floating]
-    times: np.typing.NDArray[np.floating]
+    times: List[float]
 
     def __post_init__(self):
 
-        timesteps = np.diff(self.times)
+        if isinstance(self.times, np.ndarray):
+            self.times = self.times.tolist()
+
+        timesteps = [t2 - t1 for t1, t2 in pairwise(self.times)]
+
         if not np.isclose(np.std(timesteps), 0.0):
             raise ValueError(&#34;TimeSeries.times must be uniformly spaced&#34;)
         if np.isclose(np.mean(timesteps), 0.0):
@@ -159,10 +163,11 @@ class TimeSeries:
         &#34;&#34;&#34;
 
         data = np.loadtxt(fp, delimiter=&#34;,&#34;)
+        times = data[:, time_index].tolist()
 
         return cls(
             dependent_variable=np.delete(data, obj=time_index, axis=1),
-            times=data[:, time_index]
+            times=times
         )
 
     @property
@@ -178,7 +183,7 @@ class TimeSeries:
         return self.times[1] - self.times[0]
 
     def __eq__(self, other) -&gt; bool:
-        return bool(np.all(self.times == other.times) and np.all(
+        return all(t1 == t2 for t1, t2 in zip(self.times, other.times)) and bool(np.all(
             np.isclose(self.dependent_variable, other.dependent_variable)
         ))
 
@@ -227,11 +232,12 @@ class TimeSeries:
     def __rshift__(self, other):
 
         if self.times[-1] &gt;= other.times[0]:
+            print(self.times[-1], other.times[0])
             raise ValueError(&#34;can only concatenate TimeSeries instances with non-overlapping time values&#34;)
 
         return TimeSeries(
             dependent_variable=np.vstack((self.dependent_variable, other.dependent_variable)),
-            times=np.hstack((self.times, other.times))
+            times=self.times + other.times
         )
 
     def __len__(self):
@@ -245,7 +251,7 @@ class TimeSeries:
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="aqua_blue.time_series.TimeSeries.times"><code class="name">var <span class="ident">times</span> : numpy.ndarray[typing.Any, numpy.dtype[numpy.floating]]</code></dt>
+<dt id="aqua_blue.time_series.TimeSeries.times"><code class="name">var <span class="ident">times</span> : List[float]</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
