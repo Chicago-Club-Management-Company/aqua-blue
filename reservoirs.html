@@ -56,7 +56,7 @@ el.replaceWith(d);
 <dl>
 <dt id="aqua_blue.reservoirs.DynamicalReservoir"><code class="flex name class">
 <span>class <span class="ident">DynamicalReservoir</span></span>
-<span>(</span><span>input_dimensionality: int,<br>reservoir_dimensionality: int,<br>generator: numpy.random._generator.Generator | None = None,<br>w_in: numpy.ndarray[typing.Any, numpy.dtype[numpy.floating]] | None = None,<br>activation_function: <a title="aqua_blue.reservoirs.ActivationFunction" href="#aqua_blue.reservoirs.ActivationFunction">ActivationFunction</a> = &lt;ufunc &#x27;tanh&#x27;&gt;)</span>
+<span>(</span><span>input_dimensionality: int,<br>reservoir_dimensionality: int,<br>generator: numpy.random._generator.Generator | None = None,<br>w_in: numpy.ndarray[typing.Any, numpy.dtype[numpy.floating]] | None = None,<br>w_res: numpy.ndarray[typing.Any, numpy.dtype[numpy.floating]] | None = None,<br>activation_function: <a title="aqua_blue.reservoirs.ActivationFunction" href="#aqua_blue.reservoirs.ActivationFunction">ActivationFunction</a> = &lt;ufunc &#x27;tanh&#x27;&gt;)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -83,35 +83,51 @@ class DynamicalReservoir(Reservoir):
     input linear mapping. must be shape (self.reservoir_dimensionality, self.input_dimensionality)
     if not defined at initialization, will be auto generated
     &#34;&#34;&#34;
-
+    w_res: Optional[np.typing.NDArray[np.floating]] = None
+    &#34;&#34;&#34;
+    reservoir linear mapping. must be shape (self.reservoir_dimensionality, self.reservoir_dimensionality)
+    if not defined at initialization, will be auto generated 
+    &#34;&#34;&#34;
     activation_function: ActivationFunction = np.tanh
     &#34;&#34;&#34;
     activation function f. defaults to np.tanh
     &#34;&#34;&#34;
-
+    
     def __post_init__(self):
-
+        
         if self.generator is None:
             self.generator = np.random.default_rng(seed=0)
-
+        
         if self.w_in is None:
             self.w_in = self.generator.uniform(
                 low=-0.5,
                 high=0.5,
                 size=(self.reservoir_dimensionality, self.input_dimensionality)
             )
-
-    def input_to_reservoir(self, input_state: np.typing.NDArray[np.floating]) -&gt; np.typing.NDArray[np.floating]:
-
+        if self.w_res is None: 
+            self.w_res = self.generator.uniform(
+                low=-0.5,
+                high=0.5, 
+                size=(self.reservoir_dimensionality, self.reservoir_dimensionality)
+            )
+        spectral_radius = np.linalg.norm(self.w_res, ord=2)
+        self.w_res /= (spectral_radius/0.95)
+        
+        self.res_state = np.zeros(self.reservoir_dimensionality)
+    
+    def update_reservoir(self, input_state: np.typing.NDArray[np.floating]) -&gt; np.typing.NDArray[np.floating]:
+        
         &#34;&#34;&#34;
-        Map from input state to reservoir state via y_t = f(w_in @ x_t)
-
+        Map from input state to reservoir state via y_t = f(w_in @ x_t + w_res @ y_t-1)
+        
         Args:
             input_state: input state to map to reservoir state
         &#34;&#34;&#34;
-
+        
         assert isinstance(self.w_in, np.ndarray)
-        return self.activation_function(self.w_in @ input_state)</code></pre>
+        assert isinstance(self.w_res, np.ndarray)
+        self.res_state = self.activation_function(self.w_in @ input_state + self.w_res @ self.res_state)
+        return self.res_state</code></pre>
 </details>
 <div class="desc"><p>Dynamical reservoir state, defined by the mapping:
 y_t = f(w_in @ x_t)
@@ -137,30 +153,37 @@ will be set to np.random.default_rng(seed=0) if not specified</p></div>
 <div class="desc"><p>input linear mapping. must be shape (self.reservoir_dimensionality, self.input_dimensionality)
 if not defined at initialization, will be auto generated</p></div>
 </dd>
+<dt id="aqua_blue.reservoirs.DynamicalReservoir.w_res"><code class="name">var <span class="ident">w_res</span> : numpy.ndarray[typing.Any, numpy.dtype[numpy.floating]] | None</code></dt>
+<dd>
+<div class="desc"><p>reservoir linear mapping. must be shape (self.reservoir_dimensionality, self.reservoir_dimensionality)
+if not defined at initialization, will be auto generated</p></div>
+</dd>
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="aqua_blue.reservoirs.DynamicalReservoir.input_to_reservoir"><code class="name flex">
-<span>def <span class="ident">input_to_reservoir</span></span>(<span>self, input_state: numpy.ndarray[typing.Any, numpy.dtype[numpy.floating]]) ‑> numpy.ndarray[typing.Any, numpy.dtype[numpy.floating]]</span>
+<dt id="aqua_blue.reservoirs.DynamicalReservoir.update_reservoir"><code class="name flex">
+<span>def <span class="ident">update_reservoir</span></span>(<span>self, input_state: numpy.ndarray[typing.Any, numpy.dtype[numpy.floating]]) ‑> numpy.ndarray[typing.Any, numpy.dtype[numpy.floating]]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def input_to_reservoir(self, input_state: np.typing.NDArray[np.floating]) -&gt; np.typing.NDArray[np.floating]:
-
+<pre><code class="python">def update_reservoir(self, input_state: np.typing.NDArray[np.floating]) -&gt; np.typing.NDArray[np.floating]:
+    
     &#34;&#34;&#34;
-    Map from input state to reservoir state via y_t = f(w_in @ x_t)
-
+    Map from input state to reservoir state via y_t = f(w_in @ x_t + w_res @ y_t-1)
+    
     Args:
         input_state: input state to map to reservoir state
     &#34;&#34;&#34;
-
+    
     assert isinstance(self.w_in, np.ndarray)
-    return self.activation_function(self.w_in @ input_state)</code></pre>
+    assert isinstance(self.w_res, np.ndarray)
+    self.res_state = self.activation_function(self.w_in @ input_state + self.w_res @ self.res_state)
+    return self.res_state</code></pre>
 </details>
-<div class="desc"><p>Map from input state to reservoir state via y_t = f(w_in @ x_t)</p>
+<div class="desc"><p>Map from input state to reservoir state via y_t = f(w_in @ x_t + w_res @ y_t-1)</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>input_state</code></strong></dt>
@@ -201,8 +224,8 @@ class Reservoir(ABC):
     &#34;&#34;&#34;dimensionality of the reservoir state, equivalently the reservoir size&#34;&#34;&#34;
 
     @abstractmethod
-    def input_to_reservoir(self, input_state: np.typing.NDArray[np.floating]) -&gt; np.typing.NDArray[np.floating]:
-
+    def update_reservoir(self, input_state: np.typing.NDArray[np.floating]) -&gt; np.typing.NDArray[np.floating]:
+        
         &#34;&#34;&#34;
         Map from input state to reservoir state
 
@@ -234,8 +257,8 @@ class Reservoir(ABC):
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="aqua_blue.reservoirs.Reservoir.input_to_reservoir"><code class="name flex">
-<span>def <span class="ident">input_to_reservoir</span></span>(<span>self, input_state: numpy.ndarray[typing.Any, numpy.dtype[numpy.floating]]) ‑> numpy.ndarray[typing.Any, numpy.dtype[numpy.floating]]</span>
+<dt id="aqua_blue.reservoirs.Reservoir.update_reservoir"><code class="name flex">
+<span>def <span class="ident">update_reservoir</span></span>(<span>self, input_state: numpy.ndarray[typing.Any, numpy.dtype[numpy.floating]]) ‑> numpy.ndarray[typing.Any, numpy.dtype[numpy.floating]]</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -243,8 +266,8 @@ class Reservoir(ABC):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-def input_to_reservoir(self, input_state: np.typing.NDArray[np.floating]) -&gt; np.typing.NDArray[np.floating]:
-
+def update_reservoir(self, input_state: np.typing.NDArray[np.floating]) -&gt; np.typing.NDArray[np.floating]:
+    
     &#34;&#34;&#34;
     Map from input state to reservoir state
 
@@ -288,16 +311,17 @@ def input_to_reservoir(self, input_state: np.typing.NDArray[np.floating]) -&gt; 
 <ul class="">
 <li><code><a title="aqua_blue.reservoirs.DynamicalReservoir.activation_function" href="#aqua_blue.reservoirs.DynamicalReservoir.activation_function">activation_function</a></code></li>
 <li><code><a title="aqua_blue.reservoirs.DynamicalReservoir.generator" href="#aqua_blue.reservoirs.DynamicalReservoir.generator">generator</a></code></li>
-<li><code><a title="aqua_blue.reservoirs.DynamicalReservoir.input_to_reservoir" href="#aqua_blue.reservoirs.DynamicalReservoir.input_to_reservoir">input_to_reservoir</a></code></li>
+<li><code><a title="aqua_blue.reservoirs.DynamicalReservoir.update_reservoir" href="#aqua_blue.reservoirs.DynamicalReservoir.update_reservoir">update_reservoir</a></code></li>
 <li><code><a title="aqua_blue.reservoirs.DynamicalReservoir.w_in" href="#aqua_blue.reservoirs.DynamicalReservoir.w_in">w_in</a></code></li>
+<li><code><a title="aqua_blue.reservoirs.DynamicalReservoir.w_res" href="#aqua_blue.reservoirs.DynamicalReservoir.w_res">w_res</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="aqua_blue.reservoirs.Reservoir" href="#aqua_blue.reservoirs.Reservoir">Reservoir</a></code></h4>
 <ul class="">
 <li><code><a title="aqua_blue.reservoirs.Reservoir.input_dimensionality" href="#aqua_blue.reservoirs.Reservoir.input_dimensionality">input_dimensionality</a></code></li>
-<li><code><a title="aqua_blue.reservoirs.Reservoir.input_to_reservoir" href="#aqua_blue.reservoirs.Reservoir.input_to_reservoir">input_to_reservoir</a></code></li>
 <li><code><a title="aqua_blue.reservoirs.Reservoir.reservoir_dimensionality" href="#aqua_blue.reservoirs.Reservoir.reservoir_dimensionality">reservoir_dimensionality</a></code></li>
+<li><code><a title="aqua_blue.reservoirs.Reservoir.update_reservoir" href="#aqua_blue.reservoirs.Reservoir.update_reservoir">update_reservoir</a></code></li>
 </ul>
 </li>
 </ul>
