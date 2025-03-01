@@ -3,7 +3,7 @@ Module defining reservoirs
 """
 
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from abc import ABC, abstractmethod
 from typing import Optional, Callable, TYPE_CHECKING
 
@@ -30,6 +30,9 @@ class Reservoir(ABC):
 
     reservoir_dimensionality: int
     """dimensionality of the reservoir state, equivalently the reservoir size"""
+
+    res_state: np.typing.NDArray[np.floating] = field(init=False)
+    """reservoir state, necessary property when performing training loop"""
 
     @abstractmethod
     def update_reservoir(self, input_state: np.typing.NDArray[np.floating]) -> np.typing.NDArray[np.floating]:
