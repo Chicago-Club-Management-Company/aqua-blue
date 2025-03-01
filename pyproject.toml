@@ -42,7 +42,7 @@ dev = [
     "pdoc3~=0.11.5"
 ]
 examples = [
-    "scipy~=1.15.2", 
+    "scipy~=1.13.1", 
     "matplotlib~=3.9.4"
 ]
 
