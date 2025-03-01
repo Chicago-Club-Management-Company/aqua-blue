@@ -171,4 +171,3 @@ cython_debug/
 .pypirc
 
 scratch.py
-a.py
