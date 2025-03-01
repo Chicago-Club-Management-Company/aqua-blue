@@ -35,6 +35,7 @@ def main():
     root_mean_square_error = np.sqrt(
         np.mean((actual_future - prediction.dependent_variable) ** 2)
     )
+    print(root_mean_square_error)
     plt.plot(prediction.times, actual_future)
     plt.plot(prediction.times, prediction.dependent_variable)
     plt.legend(['actual_x', 'actual_y', 'predicted_x', 'predicted_y'])

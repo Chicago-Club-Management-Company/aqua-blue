@@ -15,7 +15,7 @@ jobs:
         python-version: ["3.9", "3.10", "3.11", "3.12"]
     permissions:
       contents: read
-
+    
     steps:
       - uses: actions/checkout@v4
         with:
@@ -24,19 +24,28 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Set up environment
+      - name: Set up dev environment
         run: >-
           pip install .[dev]
+      - name: Set up example environment
+        run: >-
+          pip install .[examples]
       - name: Test with pytest
         run: >-
           pytest -W error
-      - name: Lint with ruff
+      - name: Lint with ruff (dev)
         run: >-
           ruff check aqua_blue/
-      - name: Type check with mypy
+      - name: Type check with mypy (dev)
         run: >-
           mypy aqua_blue/
-
+      - name: Lint with ruff (examples)
+        run: >- 
+          ruff check examples/
+      - name: Type check with mypy (examples)
+        run: >-
+          mypy examples/
+  
   quickstart:
     name: run quickstart
     runs-on: ubuntu-latest
