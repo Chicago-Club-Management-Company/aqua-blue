@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.integrate import solve_ivp
+from scipy.integrate import solve_ivp # type: ignore 
 import matplotlib.pyplot as plt
 import aqua_blue
 
