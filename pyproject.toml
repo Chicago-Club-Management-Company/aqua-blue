@@ -43,7 +43,7 @@ dev = [
 ]
 examples = [
     "scipy~=1.15.2", 
-    "matplotlib~=3.10.0"
+    "matplotlib~=3.9.4"
 ]
 
 [tool.hatch.version]
