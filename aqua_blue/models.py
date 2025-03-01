@@ -54,7 +54,7 @@ class Model:
         time_series_array = input_time_series.dependent_variable
         independent_variables = np.zeros((time_series_array.shape[0]-1, self.reservoir.reservoir_dimensionality))
         for i in range(independent_variables.shape[0]): 
-            independent_variables[i] = self.reservoir._update_reservoir(time_series_array[i])
+            independent_variables[i] = self.reservoir.update_reservoir(time_series_array[i])
         
         dependent_variables = time_series_array[1:]
         if warmup > 0:
@@ -85,7 +85,7 @@ class Model:
                 )
                 continue
             predictions[i, :] = self.readout.reservoir_to_output(
-                self.reservoir._update_reservoir(predictions[i-1, :])
+                self.reservoir.update_reservoir(predictions[i-1, :])
             )
         
         return TimeSeries(
