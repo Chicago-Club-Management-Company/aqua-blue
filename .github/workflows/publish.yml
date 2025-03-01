@@ -27,7 +27,7 @@ jobs:
       - name: Set up dev environment
         run: >-
           pip install .[dev]
-      - name: Set up examples environment
+      - name: Set up example environment
         run: >-
           pip install .[examples]
       - name: Test with pytest
