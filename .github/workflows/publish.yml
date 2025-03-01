@@ -26,7 +26,10 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Set up dev environment
         run: >-
-          pip install .[dev, examples]
+          pip install .[dev]
+      - name: Set up examples environment
+        run: >-
+          pip install .[examples]
       - name: Test with pytest
         run: >-
           pytest -W error
