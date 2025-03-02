@@ -33,7 +33,9 @@ class TimeSeries(Generic[DatetimeLike]):
     times: List[DatetimeLike]
 
     def __post_init__(self):
-
+        
+        if isinstance(self.times, np.ndarray) and not isinstance(self.times[0], float):
+            raise ValueError("Datetime NumPy arrays are not supported. times must be List[float] | List[datetime]")
         if isinstance(self.times, np.ndarray):
             self.times = self.times.astype(float).tolist()
 
@@ -41,9 +43,10 @@ class TimeSeries(Generic[DatetimeLike]):
 
         if isinstance(timesteps[0], timedelta):
             timesteps = [dt.total_seconds() for dt in timesteps]
-
+        
         if not np.isclose(np.std(timesteps), 0.0):
             raise ValueError("TimeSeries.times must be uniformly spaced")
+        
         if np.isclose(np.mean(timesteps), 0.0):
             raise ValueError("TimeSeries.times must have a timestep greater than zero")
 
@@ -54,41 +57,48 @@ class TimeSeries(Generic[DatetimeLike]):
                 f"TimeSeries.dependent_variable should have shape (number of steps, dimensionality). "
                 f"The shape has been changed from {(num_steps,)} to {self.dependent_variable.shape}"
             )
-
-    def save(self, fp: Union[IO, str, Path], header: str = "", delimiter=","):
-
+    
+    def save(self, fp: Union[IO, str, Path], header: str = "", delimiter: str =","):
+        
         """
         Method to save a time series
-
-        TODO: implement for datetimes
-
+        
         Args:
             fp (Union[IO, str, Path]):
                 The file-like object, path name, or Path in which to save the TimeSeries instance
-
+            
             header (str):
                 An optional header. Defaults to the empty string
-
+            
             delimiter (str):
                 The delimiting character in the save file. Defaults to a comma
-
+        
         """
         if not isinstance(self.times[0], float):
-            raise NotImplementedError
-        np.savetxt(
-            fp,
-            np.vstack((self.times, self.dependent_variable.T)).T,
-            delimiter=delimiter,
-            header=header,
-            comments=""
-        )
-
+            dim_dependent = len(self.dependent_variable[0])
+            with open(fp, "w") as f:
+                if(header != ""):
+                    f.write(f'{header}\n')
+                for t in range(len(self.times)):
+                    out_string = f'{self.times[t]}{delimiter}'
+                    for i in range(dim_dependent):      
+                        out_string += f'{self.dependent_variable[t][i]:.18e}{delimiter}'
+                    f.write(f'{out_string}\n')
+        else:
+            np.savetxt(
+                fp,
+                np.vstack((self.times, self.dependent_variable.T)).T,
+                delimiter=delimiter,
+                header=header,
+                comments=""
+            )
+        
     @property
     def num_dims(self) -> int:
 
         """
         The dimensionality of the time series
-
+        
         Returns:
             int: The dimensionality of the time series
         """
@@ -111,7 +121,7 @@ class TimeSeries(Generic[DatetimeLike]):
         Returns:
             TimeSeries: A TimeSeries instance populated by data from the csv file
         """
-
+        
         data = np.loadtxt(fp, delimiter=",")
         times = data[:, time_index].tolist()
 
