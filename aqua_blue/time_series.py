@@ -7,6 +7,8 @@ from pathlib import Path
 import warnings
 from itertools import pairwise
 from datetime import datetime, timedelta
+from dateutil import parser
+import csv
 
 from dataclasses import dataclass
 import numpy as np
@@ -106,7 +108,7 @@ class TimeSeries(Generic[DatetimeLike]):
         return self.dependent_variable.shape[1]
 
     @classmethod
-    def from_csv(cls, fp: Union[IO, str, Path], time_index: int = 0):
+    def from_csv(cls, fp: Union[IO, str, Path], time_index: int = 0, skip_header=False):
 
         """
         Method for loading in a TimeSeries instance from a comma-separated value (csv) file
@@ -117,29 +119,62 @@ class TimeSeries(Generic[DatetimeLike]):
 
             time_index (int):
                 The column index corresponding to the time column. Defaults to 0
-
+            
+            skip_header (bool):
+                Whether to skip the first row of the csv file or not. Defaults to false
+        
         Returns:
             TimeSeries: A TimeSeries instance populated by data from the csv file
         """
         
-        data = np.loadtxt(fp, delimiter=",")
-        times = data[:, time_index].tolist()
+        with open(fp, "r") as f: 
+            lines = f.readlines()
+            test_terms = lines[1].strip().split(",")
+            # If the csv file has "," at the end, this removes the empty character that is included at the end
+            if(test_terms[-1] == ""):
+                test_terms = test_terms[:-1]
+            output = [[] for _ in range(len(test_terms))]
+            
+            if not is_float(test_terms[time_index]):
+                for idx, line in enumerate(lines): 
+                    if(skip_header and idx == 0):
+                        continue
+                    terms = line.strip().split(",")
+                    if(terms[-1] == ""):
+                        terms = terms[:-1]
+                    for jdx, term in enumerate(terms):
+                        if(jdx == time_index):
+                            output[jdx].append(parser.parse(term))
+                            continue
+                        output[jdx].append(float(term))
+            
+            else:
+                for idx, line in enumerate(lines): 
+                    if(skip_header and idx == 0):
+                        continue
+                    terms = line.strip().split(",")
+                    if(terms[-1] == ""):
+                        terms = terms[:-1]
+                    
+                    for jdx, term in enumerate(terms):
+                        output[jdx].append(float(term))
 
-        return cls(
-            dependent_variable=np.delete(data, obj=time_index, axis=1),
-            times=times
-        )
-
+            return cls(
+                times=output[time_index],
+                dependent_variable=np.array([row for i, row in enumerate(output) if i!= time_index])
+            )
+    
+    
     @property
     def timestep(self) -> Union[float, timedelta]:
-
+        
         """
         The physical timestep of the time series
 
         Returns:
             int: The physical timestep of the time series
         """
-
+        
         return self.times[1] - self.times[0]
 
     def __eq__(self, other) -> bool:
@@ -203,3 +238,12 @@ class TimeSeries(Generic[DatetimeLike]):
     def __len__(self):
 
         return len(self.times)
+
+
+def is_float(date_string):
+    # Function to determine if a string can be converted to a datetime object
+    try: 
+        float(date_string)
+        return True
+    except:
+        return False
