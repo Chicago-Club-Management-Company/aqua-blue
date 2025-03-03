@@ -36,7 +36,7 @@ class TimeSeries(Generic[DatetimeLike]):
 
     def __post_init__(self):
         
-        if isinstance(self.times, np.ndarray) and not isinstance(self.times[0], float, int):
+        if isinstance(self.times, np.ndarray) and not isinstance(self.times[0], (float, int)):
             raise ValueError("Datetime NumPy arrays are not supported. times must be List[int] | List[float] | List[datetime]")
         if isinstance(self.times, np.ndarray):
             self.times = self.times.astype(float).tolist()
@@ -76,7 +76,7 @@ class TimeSeries(Generic[DatetimeLike]):
                 The delimiting character in the save file. Defaults to a comma
         
         """
-        if not isinstance(self.times[0], float, int):
+        if not isinstance(self.times[0], (float, int)):
             dim_dependent = len(self.dependent_variable[0])
             with open(fp, "w") as f:
                 if(header != ""):
