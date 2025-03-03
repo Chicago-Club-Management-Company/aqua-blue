@@ -21,7 +21,7 @@ class ShapeChangedWarning(Warning):
     """
 
 
-DatetimeLike = TypeVar("DatetimeLike", float, datetime)
+DatetimeLike = TypeVar("DatetimeLike", float, int, datetime)
 
 
 @dataclass
@@ -36,11 +36,11 @@ class TimeSeries(Generic[DatetimeLike]):
 
     def __post_init__(self):
         
-        if isinstance(self.times, np.ndarray) and not isinstance(self.times[0], float):
-            raise ValueError("Datetime NumPy arrays are not supported. times must be List[float] | List[datetime]")
+        if isinstance(self.times, np.ndarray) and not isinstance(self.times[0], float, int):
+            raise ValueError("Datetime NumPy arrays are not supported. times must be List[int] | List[float] | List[datetime]")
         if isinstance(self.times, np.ndarray):
             self.times = self.times.astype(float).tolist()
-
+        
         timesteps = [t2 - t1 for t1, t2 in pairwise(self.times)]
 
         if isinstance(timesteps[0], timedelta):
@@ -76,7 +76,7 @@ class TimeSeries(Generic[DatetimeLike]):
                 The delimiting character in the save file. Defaults to a comma
         
         """
-        if not isinstance(self.times[0], float):
+        if not isinstance(self.times[0], float, int):
             dim_dependent = len(self.dependent_variable[0])
             with open(fp, "w") as f:
                 if(header != ""):
@@ -136,7 +136,7 @@ class TimeSeries(Generic[DatetimeLike]):
                 if(line[-1] == ""):
                     line.pop()
                 output.append(line)
-
+            
             if(is_float(output[1][time_index])):
                 for i, line in enumerate(output):
                     for j, term in enumerate(line):
