@@ -42,8 +42,9 @@ class Reservoir(ABC):
 
         Args:
             input_state: input state to map to reservoir state
+            leaking_rate: leaking rate for the reservoir state. Defaults to 1
         """
-
+        
         pass
 
 
@@ -76,6 +77,11 @@ class DynamicalReservoir(Reservoir):
     """
     activation function f. defaults to np.tanh
     """
+
+    leaking_rate: float = 1
+    """ 
+    leaking rate for the reservoir state. Defaults to 1
+    """
     
     def __post_init__(self):
         
@@ -102,13 +108,14 @@ class DynamicalReservoir(Reservoir):
     def update_reservoir(self, input_state: np.typing.NDArray[np.floating]) -> np.typing.NDArray[np.floating]:
         
         """
-        Map from input state to reservoir state via y_t = f(w_in @ x_t + w_res @ y_t-1)
+        Map from input state to reservoir state via y_t = (1-alpha) * y_t-1 + alpha * f(w_in @ x_t + w_res @ y_t-1)
         
         Args:
             input_state: input state to map to reservoir state
+            leaking_rate: leaking rate for the reservoir state. Defaults to 1
         """
         
         assert isinstance(self.w_in, np.ndarray)
         assert isinstance(self.w_res, np.ndarray)
-        self.res_state = self.activation_function(self.w_in @ input_state + self.w_res @ self.res_state)
+        self.res_state = (1-self.leaking_rate)*self.res_state + self.leaking_rate * self.activation_function(self.w_in @ input_state + self.w_res @ self.res_state)
         return self.res_state
