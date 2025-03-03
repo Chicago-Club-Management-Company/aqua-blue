@@ -128,40 +128,31 @@ class TimeSeries(Generic[DatetimeLike]):
         """
         
         with open(fp, "r") as f: 
-            lines = f.readlines()
-            test_terms = lines[1].strip().split(",")
-            # If the csv file has "," at the end, this removes the empty character that is included at the end
-            if(test_terms[-1] == ""):
-                test_terms = test_terms[:-1]
-            output = [[] for _ in range(len(test_terms))]
-            
-            if not is_float(test_terms[time_index]):
-                for idx, line in enumerate(lines): 
-                    if(skip_header and idx == 0):
-                        continue
-                    terms = line.strip().split(",")
-                    if(terms[-1] == ""):
-                        terms = terms[:-1]
-                    for jdx, term in enumerate(terms):
-                        if(jdx == time_index):
-                            output[jdx].append(parser.parse(term))
-                            continue
-                        output[jdx].append(float(term))
+            output = []
+            lines = csv.reader(f)
+            for idx, line in enumerate(lines):
+                if(idx == 0 and skip_header):
+                    continue 
+                if(line[-1] == ""):
+                    line.pop()
+                output.append(line)
+
+            if(is_float(output[1][time_index])):
+                for i, line in enumerate(output):
+                    for j, term in enumerate(line):
+                        output[i][j] = float(term)
             
             else:
-                for idx, line in enumerate(lines): 
-                    if(skip_header and idx == 0):
-                        continue
-                    terms = line.strip().split(",")
-                    if(terms[-1] == ""):
-                        terms = terms[:-1]
-                    
-                    for jdx, term in enumerate(terms):
-                        output[jdx].append(float(term))
+                for i, line in enumerate(output):
+                    for j, term in enumerate(line):
+                        if(j == time_index):
+                            output[i][j] = parser.parse(term)
+                            continue
+                        output[i][j] = float(term)
 
             return cls(
-                times=output[time_index],
-                dependent_variable=np.array([row for i, row in enumerate(output) if i!= time_index])
+                times=[row[time_index] for row in output],
+                dependent_variable=np.array([row[:(time_index)] + row[(time_index+1):] for row in output])
             )
     
     
