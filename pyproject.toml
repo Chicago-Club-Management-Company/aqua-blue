@@ -39,6 +39,7 @@ dev = [
     "ruff~=0.9.4",
     "mypy~=1.13.0",
     "pdoc3~=0.11.5"
+    "pytz~=2025.1"
 ]
 examples = [
     "scipy~=1.13.1", 
