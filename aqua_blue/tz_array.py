@@ -42,7 +42,7 @@ class TZArray(np.ndarray):
         naive_array = [dt.replace(tzinfo=None) for dt in input_array]
         datetime64_array = np.array([np.datetime64(dt.isoformat()) for dt in naive_array], dtype=dtype)
         
-        tz_offset = tz.utcoffset(input_array[0])
+        tz_offset = datetime.datetime.now(tz).utcoffset()
         
         np_offset = np.timedelta64(int(np.abs(tz_offset.total_seconds())), 's')
         
@@ -71,10 +71,14 @@ class TZArray(np.ndarray):
         return f"TZArray({super().__repr__()}, tz={self.tz})"
     
     def __eq__(self, other):
-        return (super().__eq__(other)).all() and self.tz == other.tz
+        return (super().__eq__(other)).all() and datetime.datetime.now(self.tz).utcoffset() == datetime.datetime.now(other.tz).utcoffset()
     
     def copy(self, order='C'):
         return self.view(type(self)).__array_finalize__(self)
+    
+    def astimezone(self, tz: datetime.tzinfo):
+        self.tz = tz
+        self.tz_offset = datetime.datetime.now(tz).utcoffset()
     
     def tolist(self):
         """ 
@@ -116,7 +120,7 @@ class TZArray(np.ndarray):
             arr += np_offset
 
         arr = super(TZArray, arr).tolist()
-        arr = [dt.replace(tzinfo=None) for dt in arr]
+        arr = [dt.replace(tzinfo=None).isoformat() for dt in arr]
         np.savetxt(filename, arr, fmt='%s')
 
 def fromNDArray(arr: NDArray, tz: datetime.tzinfo=ZoneInfo("UTC")) -> TZArray: 
