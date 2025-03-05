@@ -5,7 +5,6 @@ from zoneinfo import ZoneInfo
 from numpy.typing import NDArray
 from typing import IO, Union
 from pathlib import Path
-from dataclasses import dataclass, field
 
 class TZArray(np.ndarray):
     """
@@ -60,7 +59,8 @@ class TZArray(np.ndarray):
         return obj
     
     def __array_finalize__(self, obj):
-        if obj is None: return
+        if obj is None: 
+            return
         self.tz = getattr(obj, 'tz', ZoneInfo('UTC'))
         self.tz_offset = getattr(obj, 'tz_offset', np.timedelta64(0, 's'))
     
