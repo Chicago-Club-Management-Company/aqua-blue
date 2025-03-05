@@ -104,10 +104,20 @@ class TZArray(np.ndarray):
             filename: The file-like object, path name, or Path in which to save
             tz: Timezone information to write the data in
         """
-        arr = self.tolist() 
-        arr = [dt.astimezone(tz) for dt in arr]
+        arr = np.zeros_like(self)
+        arr[:] = self
+        
+        tz_offset = datetime.datetime.now(tz).utcoffset()
+        np_offset = np.timedelta64(int(np.abs(tz_offset.total_seconds())), 's')
+
+        if(tz_offset.total_seconds() < 0):
+            arr -= np_offset
+        else:
+            arr += np_offset
+
+        arr = super(TZArray, arr).tolist()
         arr = [dt.replace(tzinfo=None) for dt in arr]
-        np.savetxt(filename, np.array(arr), fmt='%s')
+        np.savetxt(filename, arr, fmt='%s')
 
 def fromNDArray(arr: NDArray, tz: datetime.tzinfo=ZoneInfo("UTC")) -> TZArray: 
     """ 
