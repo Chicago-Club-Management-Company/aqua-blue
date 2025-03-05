@@ -64,7 +64,6 @@ class TZArray(np.ndarray):
         self.tz = getattr(obj, 'tz', ZoneInfo('UTC'))
         self.tz_offset = getattr(obj, 'tz_offset', np.timedelta64(0, 's'))
     
-        
     def __repr__(self):
         """ 
         Update the representation of the array to include the timezone information
@@ -91,8 +90,9 @@ class TZArray(np.ndarray):
             arr += np_offset
 
         arr = super(TZArray, arr).tolist()
-        
+
         arr = [dt.replace(tzinfo=self.tz) for dt in arr]
+
         return arr
     
     def toFile(self, filename: Union[IO, str, Path], tz: datetime.tzinfo=ZoneInfo("UTC")):
