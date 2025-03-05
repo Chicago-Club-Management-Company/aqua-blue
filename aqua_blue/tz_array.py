@@ -23,7 +23,7 @@ class TZArray(np.ndarray):
     """
     
     """ 
-    tz_offset: np.delta64 = np.timedelta64(0, 's')
+    tz_offset: np.timedelta64 = np.timedelta64(0, 's')
     Store the timezone offset information for the array. Default is 0 seconds (UTC).
     """
 
@@ -62,6 +62,7 @@ class TZArray(np.ndarray):
     def __array_finalize__(self, obj):
         if obj is None: return
         self.tz = getattr(obj, 'tz', ZoneInfo('UTC'))
+        self.tz_offset = getattr(obj, 'tz_offset', np.timedelta64(0, 's'))
     
         
     def __repr__(self):
@@ -80,10 +81,19 @@ class TZArray(np.ndarray):
         """ 
         Convert the array back to a list of datetime objects with timezone information
         """
-        utc_list = super().tolist()
-        utc_list = [date.replace(tzinfo=ZoneInfo('UTC')) for date in utc_list]
-        out =  [dt.astimezone(self.tz) for dt in utc_list]
-        return out 
+        arr = np.zeros_like(self)
+        arr[:] = self
+        np_offset = np.timedelta64(int(np.abs(self.tz_offset.total_seconds())), 's')
+        
+        if(self.tz_offset.total_seconds() < 0):
+            arr -= np_offset
+        else:
+            arr += np_offset
+
+        arr = super(TZArray, arr).tolist()
+        
+        arr = [dt.replace(tzinfo=self.tz) for dt in arr]
+        return arr
     
     def toFile(self, filename: Union[IO, str, Path], tz: datetime.tzinfo=ZoneInfo("UTC")):
         """ 
