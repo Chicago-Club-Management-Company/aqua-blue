@@ -15,26 +15,26 @@ class TZArray(np.ndarray):
     The datetime objects are stored in UTC time and converted to the specified timezone when accessed.
     This is a very simple implementation that works for 1 dimensional arrays. It is meant to satisfy our datetime processing 
     requirements, not for timezone NumPy integration in general. 
-
+    
     """
     tz: datetime.tzinfo = ZoneInfo('UTC')
     """ 
-    Store the timezone information for the array. Default is None.
+    Store the timezone information for the array. Default is UTC.
     """
+    
+    """ 
+    tz_offset: np.delta64 = np.timedelta64(0, 's')
+    Store the timezone offset information for the array. Default is 0 seconds (UTC).
+    """
+
     
     def __new__(cls, input_array: List[datetime.datetime], dtype='datetime64[s]', buffer=None, offset=0, strides=None, order=None):
         # Store the timezone information of the first element - this means that all elements must belong to the same timezone.
 
-        try:
-            tz = ZoneInfo(input_array[0].tzinfo.zone)
-        except AttributeError:
-            tz = input_array[0].tzinfo
+        tz = input_array[0].tzinfo if input_array[0].tzinfo else ZoneInfo('UTC') 
         
         for dt in input_array:
-            try:
-                current_tz = ZoneInfo(dt.tzinfo.zone)
-            except AttributeError:
-                current_tz = dt.tzinfo
+            current_tz = dt.tzinfo if dt.tzinfo else ZoneInfo('UTC')
             if current_tz != tz:
                 raise ValueError("All elements must belong to the same timezone.")
         
@@ -42,20 +42,21 @@ class TZArray(np.ndarray):
         naive_array = [dt.replace(tzinfo=None) for dt in input_array]
         datetime64_array = np.array([np.datetime64(dt.isoformat()) for dt in naive_array], dtype=dtype)
         
-        if tz is not None:
-            tc_offset = tz.utcoffset(input_array[0])
-            np_offset = np.timedelta64(int(np.abs(tc_offset.total_seconds())), 's')
-            
-            if(tc_offset.total_seconds() < 0):
-                datetime64_array += np_offset
-            else:
-                datetime64_array -= np_offset
+        tz_offset = tz.utcoffset(input_array[0])
+        
+        np_offset = np.timedelta64(int(np.abs(tz_offset.total_seconds())), 's')
+        
+        if(tz_offset.total_seconds() < 0):
+            datetime64_array += np_offset
+        else:
+            datetime64_array -= np_offset
         
         obj = super().__new__(cls, datetime64_array.shape, dtype, buffer, offset, strides, order)
         obj[:] = datetime64_array
-
-        if tz is not None:
-            obj.tz = tz
+        
+        obj.tz = tz
+        obj.tz_offset = tz_offset  
+        
         return obj
     
     def __array_finalize__(self, obj):
