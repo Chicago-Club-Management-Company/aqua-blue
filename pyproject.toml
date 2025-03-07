@@ -27,6 +27,8 @@ classifiers = [
 ]
 dependencies = [
     "numpy ~= 2.0.2",
+    "pytz~=2025.1",
+    "python-dateutil~=2.9.0.post0"
 ]
 
 [project.urls]
@@ -39,8 +41,6 @@ dev = [
     "ruff~=0.9.4",
     "mypy~=1.13.0",
     "pdoc3~=0.11.5",
-    "pytz~=2025.1",
-    "python-dateutil~=2.9.0.post0"
 ]
 examples = [
     "scipy~=1.13.1", 
