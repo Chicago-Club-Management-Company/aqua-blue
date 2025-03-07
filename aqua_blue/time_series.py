@@ -2,14 +2,17 @@
 Module defining the TimeSeries object
 """
 
-from typing import IO, Union, List
+from typing import IO, Union
+from numpy.typing import NDArray
 from pathlib import Path
 import warnings
-from itertools import pairwise
 
 from dataclasses import dataclass
 import numpy as np
+from aqua_blue.tz_array import TZArray, fromNDArray
 
+from zoneinfo import ZoneInfo
+import datetime
 
 class ShapeChangedWarning(Warning):
 
@@ -26,20 +29,29 @@ class TimeSeries:
     """
 
     dependent_variable: np.typing.NDArray[np.floating]
-    times: List[float]
+    times: Union[NDArray[np.floating], TZArray]
 
     def __post_init__(self):
+        # If List[float] | List[int] | List[datetime] are passed, convert to NDArray and TZArray respectively 
+        if(isinstance(self.times, list)):
+            if(isinstance(self.times[0], (float, int))):       
+                self.times = np.array(self.times)
+            elif (isinstance(self.times[0], datetime.datetime)): 
+                self.times = TZArray(self.times)
+            else:
+                raise NotImplementedError
 
-        if isinstance(self.times, np.ndarray):
-            self.times = self.times.tolist()
-
-        timesteps = [t2 - t1 for t1, t2 in pairwise(self.times)]
-
+        # If NDArray[np.datetime64] is passed, then convert to TZArray[ZoneInfo = UTC]
+        if(isinstance(self.times, NDArray) and isinstance(self.times[0], np.datetime64)): 
+            self.times = fromNDArray(self.times)
+        
+        timesteps = np.diff(self.times)
+        
         if not np.isclose(np.std(timesteps), 0.0):
             raise ValueError("TimeSeries.times must be uniformly spaced")
         if np.isclose(np.mean(timesteps), 0.0):
             raise ValueError("TimeSeries.times must have a timestep greater than zero")
-
+        
         if len(self.dependent_variable.shape) == 1:
             num_steps = len(self.dependent_variable)
             self.dependent_variable = self.dependent_variable.reshape(num_steps, 1)
@@ -64,6 +76,8 @@ class TimeSeries:
                 The delimiting character in the save file. Defaults to a comma
 
         """
+        # This should work just fine as long as we are writing datetime objects in UTC.
+
         np.savetxt(
             fp,
             np.vstack((self.times, self.dependent_variable.T)).T,
@@ -85,7 +99,7 @@ class TimeSeries:
         return self.dependent_variable.shape[1]
 
     @classmethod
-    def from_csv(cls, fp: Union[IO, str, Path], time_index: int = 0):
+    def from_csv(cls, fp: Union[IO, str, Path], tz: ZoneInfo = ZoneInfo("UTC"), time_index: int = 0):
 
         """
         Method for loading in a TimeSeries instance from a comma-separated value (csv) file
@@ -97,16 +111,19 @@ class TimeSeries:
             time_index (int):
                 The column index corresponding to the time column. Defaults to 0
 
+            tz (ZoneInfo):
+                The timezone to read the datetime data in
+        
         Returns:
             TimeSeries: A TimeSeries instance populated by data from the csv file
         """
-
+        
         data = np.loadtxt(fp, delimiter=",")
         times = data[:, time_index].tolist()
-
+        
         return cls(
             dependent_variable=np.delete(data, obj=time_index, axis=1),
-            times=times
+            times=fromNDArray(times, tz)
         )
 
     @property
@@ -122,10 +139,14 @@ class TimeSeries:
         return self.times[1] - self.times[0]
 
     def __eq__(self, other) -> bool:
-        return all(t1 == t2 for t1, t2 in zip(self.times, other.times)) and bool(np.all(
-            np.isclose(self.dependent_variable, other.dependent_variable)
-        ))
-
+        if(isinstance(self.times, NDArray) and isinstance(other.times, NDArray)):
+            return (self.times == other.times).all() and bool(np.all(
+                np.isclose(self.dependent_variable, other.dependent_variable)
+            ))
+        elif(isinstance(self.times, TZArray) and isinstance(other.times, TZArray)):
+            return (self.times == other.times) and bool(np.all(
+                np.isclose(self.dependent_variable, other.dependent_variable)
+            ))
     def __getitem__(self, key):
 
         return TimeSeries(self.dependent_variable[key], self.times[key])

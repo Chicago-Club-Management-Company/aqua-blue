@@ -1,8 +1,10 @@
 from io import BytesIO
 from copy import deepcopy
+from datetime import datetime, timedelta
 
 import pytest
 import numpy as np
+import pytz
 
 from aqua_blue import time_series, utilities, reservoirs, readouts, models
 
@@ -142,3 +144,19 @@ def test_timeseries_slice_assignment():
     )
     ts[:2] = new_ts
     assert np.all(ts.dependent_variable == np.array([[9, 9], [8, 8], [5, 6], [7, 8]]))
+
+
+def test_datetime_time_series(cosine_sine_series):
+
+    time_init = datetime(
+        year=2025,
+        month=3,
+        day=1,
+        hour=12,
+        tzinfo=pytz.timezone("America/Chicago")
+    )
+
+    _ = time_series.TimeSeries(
+        dependent_variable=cosine_sine_series.dependent_variable,
+        times=[time_init + step * timedelta(days=1.0) for step in range(10)]
+    )
