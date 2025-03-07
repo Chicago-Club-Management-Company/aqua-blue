@@ -27,6 +27,7 @@ classifiers = [
 ]
 dependencies = [
     "numpy ~= 2.0.2",
+    "tzdata~=2025.1",
 ]
 
 [project.urls]
@@ -38,7 +39,7 @@ dev = [
     "pytest~=8.0.2",
     "ruff~=0.9.4",
     "mypy~=1.13.0",
-    "pdoc3~=0.11.5"
+    "pdoc3~=0.11.5",
 ]
 examples = [
     "scipy~=1.13.1", 
