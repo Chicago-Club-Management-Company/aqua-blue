@@ -55,7 +55,7 @@ class Normalizer:
         """
         Denormalize the given TimeSeries instance. Means and standard deviations are grabbed
         from a previous normalization
-
+        
         Args:
             time_series (TimeSeries): Time series to denormalize
 

@@ -17,7 +17,7 @@ import datetime
 from .tz_array import TZArray, fromNDArray
 
 class ShapeChangedWarning(Warning):
-
+    
     """
     warn the user that TimeSeries.__post_init__ changed the shape of the dependent variable
     """
@@ -44,14 +44,14 @@ class TimeSeries:
                 raise NotImplementedError
 
         # If NDArray[np.datetime64] is passed, then convert to TZArray[ZoneInfo = UTC]
-        if(isinstance(self.times, np.ndarray) and np.issubdtype(self.times.dtype, np.datetime64)): 
+        if(not isinstance(self.times, TZArray) and isinstance(self.times, np.ndarray) and np.issubdtype(self.times.dtype, np.datetime64)): 
             self.times = fromNDArray(self.times)
         
-        timesteps = np.diff(self.times)
+        timesteps = np.array(np.diff(self.times))
         
-        if not np.isclose(np.std(timesteps), 0.0):
+        if not np.isclose(np.std(timesteps.astype(float)), 0.0):
             raise ValueError("TimeSeries.times must be uniformly spaced")
-        if np.isclose(np.mean(timesteps), 0.0):
+        if np.isclose(np.mean(timesteps.astype(float)), 0.0):
             raise ValueError("TimeSeries.times must have a timestep greater than zero")
         
         if len(self.dependent_variable.shape) == 1:
@@ -121,13 +121,17 @@ class TimeSeries:
         """
         
         data = np.loadtxt(fp, delimiter=",")
-        times = data[:, time_index].tolist()
-        
+        times = data[:, time_index]
+        if(isinstance(times[0], np.datetime64)):
+            return cls(
+                dependent_variable=np.delete(data, obj=time_index, axis=1),
+                times=fromNDArray(times, tz)
+            )
         return cls(
             dependent_variable=np.delete(data, obj=time_index, axis=1),
-            times=fromNDArray(times, tz)
+            times=np.array(times)
         )
-
+    
     @property
     def timestep(self) -> float:
 

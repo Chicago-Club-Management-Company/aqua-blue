@@ -116,9 +116,9 @@ class TZArray(np.ndarray):
         np_offset = np.timedelta64(int(np.abs(seconds_offset)), 's')
 
         if(seconds_offset < 0):
-            arr =  arr - np_offset
+            arr =  arr - np_offset # Need to fix this for mypy
         else:
-            arr = arr + np_offset
+            arr = arr + np_offset # Need to fix this for mypy
         
         arr = super(TZArray, arr).tolist()
         replaced_arr = [dt.replace(tzinfo=None).isoformat() for dt in arr]

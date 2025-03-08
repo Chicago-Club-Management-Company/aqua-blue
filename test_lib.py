@@ -4,7 +4,8 @@ from datetime import datetime, timedelta
 
 import pytest
 import numpy as np
-import pytz
+
+from zoneinfo import ZoneInfo
 
 from aqua_blue import time_series, utilities, reservoirs, readouts, models
 
@@ -113,6 +114,8 @@ def test_can_concatenate_time_series(cosine_sine_series):
     t = cosine_sine_series >> second_time_series
 
     assert np.all(t.dependent_variable == np.concatenate((cosine_sine_series.dependent_variable, second_time_series.dependent_variable)))
+    print(t.times)
+    print(np.concatenate((cosine_sine_series.times, second_time_series.times)))
     assert np.all(t.times == np.concatenate((cosine_sine_series.times, second_time_series.times)))
 
 
@@ -153,7 +156,7 @@ def test_datetime_time_series(cosine_sine_series):
         month=3,
         day=1,
         hour=12,
-        tzinfo=pytz.timezone("America/Chicago")
+        tzinfo=ZoneInfo("America/Chicago")
     )
 
     _ = time_series.TimeSeries(
