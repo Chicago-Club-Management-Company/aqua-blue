@@ -42,10 +42,10 @@ class TZArray(np.ndarray):
         datetime64_array = np.array([np.datetime64(dt.isoformat()) for dt in naive_array], dtype=dtype)
         
         tz_offset = datetime.datetime.now(tz).utcoffset()
+        seconds_offset = tz_offset.total_seconds() if tz_offset is not None else 0
+        np_offset = np.timedelta64(int(np.abs(seconds_offset)), 's')
         
-        np_offset = np.timedelta64(int(np.abs(tz_offset.total_seconds())), 's')
-        
-        if(tz_offset.total_seconds() < 0):
+        if(seconds_offset < 0):
             datetime64_array += np_offset
         else:
             datetime64_array -= np_offset
@@ -94,7 +94,7 @@ class TZArray(np.ndarray):
             arr += np_offset
 
         arr = super(TZArray, arr).tolist()
-
+        
         arr = [dt.replace(tzinfo=self.tz) for dt in arr]
 
         return arr
@@ -112,16 +112,17 @@ class TZArray(np.ndarray):
         arr[:] = self
         
         tz_offset = datetime.datetime.now(tz).utcoffset()
-        np_offset = np.timedelta64(int(np.abs(tz_offset.total_seconds())), 's')
+        seconds_offset = tz_offset.total_seconds() if tz_offset is not None else 0
+        np_offset = np.timedelta64(int(np.abs(seconds_offset)), 's')
 
-        if(tz_offset.total_seconds() < 0):
-            arr -= np_offset
+        if(seconds_offset < 0):
+            arr =  arr - np_offset
         else:
-            arr += np_offset
-
+            arr = arr + np_offset
+        
         arr = super(TZArray, arr).tolist()
-        arr = [dt.replace(tzinfo=None).isoformat() for dt in arr]
-        np.savetxt(filename, arr, fmt='%s')
+        replaced_arr = [dt.replace(tzinfo=None).isoformat() for dt in arr]
+        np.savetxt(filename, replaced_arr, fmt='%s')
 
 def fromNDArray(arr: NDArray, tz: datetime.tzinfo=ZoneInfo("UTC")) -> TZArray: 
     """ 

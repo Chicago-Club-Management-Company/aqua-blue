@@ -9,10 +9,12 @@ import warnings
 
 from dataclasses import dataclass
 import numpy as np
-from aqua_blue.tz_array import TZArray, fromNDArray
+
 
 from zoneinfo import ZoneInfo
 import datetime
+
+from .tz_array import TZArray, fromNDArray
 
 class ShapeChangedWarning(Warning):
 
@@ -42,7 +44,7 @@ class TimeSeries:
                 raise NotImplementedError
 
         # If NDArray[np.datetime64] is passed, then convert to TZArray[ZoneInfo = UTC]
-        if(isinstance(self.times, NDArray) and isinstance(self.times[0], np.datetime64)): 
+        if(isinstance(self.times, np.ndarray) and np.issubdtype(self.times.dtype, np.datetime64)): 
             self.times = fromNDArray(self.times)
         
         timesteps = np.diff(self.times)
@@ -139,7 +141,7 @@ class TimeSeries:
         return self.times[1] - self.times[0]
 
     def __eq__(self, other) -> bool:
-        if(isinstance(self.times, NDArray) and isinstance(other.times, NDArray)):
+        if(isinstance(self.times, np.ndarray) and isinstance(other.times, np.ndarray)):
             return (self.times == other.times).all() and bool(np.all(
                 np.isclose(self.dependent_variable, other.dependent_variable)
             ))
@@ -147,6 +149,9 @@ class TimeSeries:
             return (self.times == other.times) and bool(np.all(
                 np.isclose(self.dependent_variable, other.dependent_variable)
             ))
+        else:
+            return False
+        
     def __getitem__(self, key):
 
         return TimeSeries(self.dependent_variable[key], self.times[key])

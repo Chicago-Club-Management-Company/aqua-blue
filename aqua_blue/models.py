@@ -5,11 +5,12 @@ Module defining models, i.e. compositions of reservoir(s) and readout layers
 from dataclasses import dataclass, field
 
 import numpy as np
+import datetime 
 
 from .reservoirs import Reservoir
 from .readouts import Readout
 from .time_series import TimeSeries
-
+from .tz_array import fromNDArray
 
 @dataclass
 class Model:
@@ -41,7 +42,7 @@ class Model:
     ):
         """
         Training method for model
-
+        
         Args:
             input_time_series: TimeSeries instance to train on
             warmup: Number of initial steps to ignore in training
@@ -88,7 +89,12 @@ class Model:
                 self.reservoir.update_reservoir(predictions[i-1, :])
             )
         
+        if(isinstance(self.final_time, np.datetime64)):
+            _times = fromNDArray(np.arange(start=(self.final_time + self.timestep), stop=(self.final_time + (horizon+1)*self.timestep), step=self.timestep, dtype=type(self.final_time)), self.times.tz)
+        else: 
+            _times = np.arange(start=(self.final_time + self.timestep), stop=(self.final_time + (horizon+1)*self.timestep), step=self.timestep)
+        
         return TimeSeries(
             dependent_variable=predictions,
-            times=[self.final_time + step * self.timestep for step in range(1, horizon + 1)]
+            times=_times
         )
