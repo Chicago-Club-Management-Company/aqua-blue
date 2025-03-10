@@ -1,6 +1,9 @@
 from aqua_blue.tz_array import * 
+
 import numpy as np 
+
 from typing import List
+
 from zoneinfo import ZoneInfo
 
 #####################################################################
@@ -22,8 +25,8 @@ tz_array_from_ndarray = fromNDArray(datetime_ndarray, ZoneInfo("America/New_York
 print(f'TZArray Initialized from NDArray[datetime64]: {tz_array_from_ndarray}\n')
 
 # From File
-# tz_array_from_file = fromFile('data.txt', ZoneInfo("America/New_York"))
-# print(f'TZArray Initialized from File: {tz_array_from_file}\n')
+tz_array_from_file = fromFile('data.txt', ZoneInfo("America/New_York"))
+print(f'TZArray Initialized from File: {tz_array_from_file}\n')
 
 #####################################################################
 #                          TZARRAY OPERATIONS                       # 
@@ -32,3 +35,7 @@ print(f'TZArray Initialized from NDArray[datetime64]: {tz_array_from_ndarray}\n'
 # Write to File 
 tz_array_from_list.toFile('data.txt', ZoneInfo("America/New_York"))
 print(f'TZArray Written to File: {tz_array_from_list}\n')
+
+# Write to list 
+print(tz_array_from_list.tolist())
+assert(datetime_list == tz_array_from_list.tolist())
