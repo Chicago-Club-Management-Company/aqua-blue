@@ -3,13 +3,11 @@ Module defining the TimeSeries object
 """
 
 from typing import IO, Union
-from numpy.typing import NDArray
 from pathlib import Path
 import warnings
 
 from dataclasses import dataclass
 import numpy as np
-
 
 from zoneinfo import ZoneInfo
 import datetime
@@ -31,10 +29,10 @@ class TimeSeries:
     """
 
     dependent_variable: np.typing.NDArray[np.floating]
-    times: Union[NDArray[np.floating], TZArray]
-
+    times: Union[np.typing.NDArray[np.floating], TZArray]
+    
     def __post_init__(self):
-        # If List[float] | List[int] | List[datetime] are passed, convert to NDArray and TZArray respectively 
+        # If List[float] | List[int] | List[datetime] are passed, convert to NDArray, NDArray and TZArray respectively 
         if(isinstance(self.times, list)):
             if(isinstance(self.times[0], (float, int))):       
                 self.times = np.array(self.times)
@@ -49,6 +47,7 @@ class TimeSeries:
         
         timesteps = np.array(np.diff(self.times))
         
+        # std and mean does not work with timedelta64, but casting to float converts timedelta64 to amount of seconds offset
         if not np.isclose(np.std(timesteps.astype(float)), 0.0):
             raise ValueError("TimeSeries.times must be uniformly spaced")
         if np.isclose(np.mean(timesteps.astype(float)), 0.0):
@@ -143,13 +142,13 @@ class TimeSeries:
         """
 
         return self.times[1] - self.times[0]
-
+    
     def __eq__(self, other) -> bool:
-        if(isinstance(self.times, np.ndarray) and isinstance(other.times, np.ndarray)):
-            return (self.times == other.times).all() and bool(np.all(
+        if(type(self.times) is np.ndarray and type(other.times) is np.ndarray):
+            return bool(np.all(self.times == other.times)) and bool(np.all(
                 np.isclose(self.dependent_variable, other.dependent_variable)
             ))
-        elif(isinstance(self.times, TZArray) and isinstance(other.times, TZArray)):
+        elif(type(self.times) is TZArray and type(other.times) is TZArray):
             return (self.times == other.times) and bool(np.all(
                 np.isclose(self.dependent_variable, other.dependent_variable)
             ))
@@ -206,9 +205,9 @@ class TimeSeries:
 
         return TimeSeries(
             dependent_variable=np.vstack((self.dependent_variable, other.dependent_variable)),
-            times=self.times + other.times
+            times= np.concatenate((self.times, other.times))
         )
 
     def __len__(self):
-
+        
         return len(self.times)

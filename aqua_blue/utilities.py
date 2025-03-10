@@ -4,10 +4,13 @@ This module provides simple utilities for processing TimeSeries instances
 
 
 from dataclasses import dataclass, field
+from typing import Union
 
 import numpy as np
 
 from .time_series import TimeSeries
+from .tz_array import TZArray
+
 
 
 @dataclass
@@ -17,8 +20,8 @@ class Normalizer:
     Normalizer class to normalize a time series to have zero mean and unit variance
     """
 
-    means: np.typing.NDArray[np.floating] = field(init=False)
-    standard_deviations: np.typing.NDArray[np.floating] = field(init=False)
+    means: Union[np.typing.NDArray[np.floating], TZArray] = field(init=False)
+    standard_deviations: Union[np.typing.NDArray[np.floating], TZArray] = field(init=False)
 
     def normalize(self, time_series: TimeSeries) -> TimeSeries:
 
