@@ -23,7 +23,7 @@ class TZArray(np.ndarray):
     Store the timezone information for the array. Default is UTC.
     """
     
-    tz_offset: datetime.timedelta
+    tz_offset: datetime.timedelta = datetime.timedelta(0)
     """ 
     Store the timezone offset information for the array. Default is 0 seconds (UTC).
     """
