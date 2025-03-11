@@ -9,7 +9,7 @@ from typing import Union
 import numpy as np
 
 from .time_series import TimeSeries
-from .tz_array import TZArray
+from .datetimelikearray import TZArray
 
 
 
@@ -20,8 +20,8 @@ class Normalizer:
     Normalizer class to normalize a time series to have zero mean and unit variance
     """
 
-    means: Union[np.typing.NDArray[np.floating], TZArray] = field(init=False)
-    standard_deviations: Union[np.typing.NDArray[np.floating], TZArray] = field(init=False)
+    means: np.typing.NDArray[np.floating] = field(init=False)
+    standard_deviations: np.typing.NDArray[np.floating] = field(init=False)
 
     def normalize(self, time_series: TimeSeries) -> TimeSeries:
 
