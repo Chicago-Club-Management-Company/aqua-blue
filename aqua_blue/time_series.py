@@ -12,7 +12,7 @@ import numpy as np
 from zoneinfo import ZoneInfo
 import datetime
 
-from .tz_array import TZArray, fromNDArray
+from .datetimelikearray import DatetimeLikeArray
 
 class ShapeChangedWarning(Warning):
     
@@ -29,21 +29,11 @@ class TimeSeries:
     """
 
     dependent_variable: np.typing.NDArray[np.floating]
-    times: Union[np.typing.NDArray[np.floating], TZArray]
+    times: DatetimeLikeArray
     
     def __post_init__(self):
         # If List[float] | List[int] | List[datetime] are passed, convert to NDArray, NDArray and TZArray respectively 
-        if(isinstance(self.times, list)):
-            if(isinstance(self.times[0], (float, int))):       
-                self.times = np.array(self.times)
-            elif (isinstance(self.times[0], datetime.datetime)): 
-                self.times = TZArray(self.times)
-            else:
-                raise NotImplementedError
-
-        # If NDArray[np.datetime64] is passed, then convert to TZArray[ZoneInfo = UTC]
-        if(not isinstance(self.times, TZArray) and isinstance(self.times, np.ndarray) and np.issubdtype(self.times.dtype, np.datetime64)): 
-            self.times = fromNDArray(self.times)
+        self.times = DatetimeLikeArray(self.times)
         
         timesteps = np.array(np.diff(self.times))
         
@@ -121,16 +111,10 @@ class TimeSeries:
         
         data = np.loadtxt(fp, delimiter=",")
         times = data[:, time_index]
-        if(isinstance(times[0], np.datetime64)):
-            return cls(
-                dependent_variable=np.delete(data, obj=time_index, axis=1),
-                times=fromNDArray(times, tz)
-            )
-        return cls(
-            dependent_variable=np.delete(data, obj=time_index, axis=1),
-            times=np.array(times)
-        )
-    
+
+        dependent_variable=np.delete(data, obj=time_index, axis=1),
+        times=DatetimeLikeArray.from_fp(times, tz)
+
     @property
     def timestep(self) -> float:
 
@@ -144,19 +128,10 @@ class TimeSeries:
         return self.times[1] - self.times[0]
     
     def __eq__(self, other) -> bool:
-        if(type(self.times) is np.ndarray and type(other.times) is np.ndarray):
-            return bool(np.all(self.times == other.times)) and bool(np.all(
-                np.isclose(self.dependent_variable, other.dependent_variable)
-            ))
-        elif(type(self.times) is TZArray and type(other.times) is TZArray):
-            return (self.times == other.times) and bool(np.all(
-                np.isclose(self.dependent_variable, other.dependent_variable)
-            ))
-        else:
-            return False
+        return (self.times == other.times) and bool(np.all(np.isclose(self.dependent_variable, other.dependent_variable)))
         
     def __getitem__(self, key):
-
+        
         return TimeSeries(self.dependent_variable[key], self.times[key])
 
     def __setitem__(self, key, value):
