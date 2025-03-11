@@ -114,8 +114,6 @@ def test_can_concatenate_time_series(cosine_sine_series):
     t = cosine_sine_series >> second_time_series
 
     assert np.all(t.dependent_variable == np.concatenate((cosine_sine_series.dependent_variable, second_time_series.dependent_variable)))
-    print(t.times)
-    print(np.concatenate((cosine_sine_series.times, second_time_series.times)))
     assert np.all(t.times == np.concatenate((cosine_sine_series.times, second_time_series.times)))
 
 
