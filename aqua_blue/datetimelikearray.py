@@ -106,22 +106,24 @@ class DatetimeLikeArray(np.ndarray):
         arr = np.zeros_like(self)
         arr[:] = self
 
-        if self.tz:
-            # Check if it's None for type-checking
-            tz_offset: datetime.timedelta = self.tz_offset if self.tz_offset else datetime.timedelta(0)
-            np_offset = np.timedelta64(int(np.abs(tz_offset.total_seconds())), 's')
-            
-            if tz_offset.total_seconds() < 0:
-                offset_arr = arr - np_offset
-            else:
-                offset_arr = arr + np_offset
-            
-            list_arr = offset_arr.tolist() # mypy throws a type-checking error here
-            converted_arr = [dt.replace(tzinfo=self.tz) for dt in list_arr]
-            
-            return converted_arr
-        else: 
+        if not self.tz:
             return arr.tolist()
+            
+        # Check if it's None for type-checking
+        tz_offset: datetime.timedelta = self.tz_offset if self.tz_offset else datetime.timedelta(0)
+        np_offset = np.timedelta64(int(np.abs(tz_offset.total_seconds())), 's')
+        
+        if tz_offset.total_seconds() < 0:
+            offset_arr = arr - np_offset
+        else:
+            offset_arr = arr + np_offset
+        
+        list_arr = offset_arr.tolist() # mypy throws a type-checking error here
+        converted_arr = [dt.replace(tzinfo=self.tz) for dt in list_arr]
+        
+        return converted_arr
+
+
     
     def to_file(self, fp: Union[IO, str, Path], tz: Union[datetime.tzinfo, None]=None):
         """ 
@@ -135,21 +137,23 @@ class DatetimeLikeArray(np.ndarray):
 
         arr = np.zeros_like(self)
         arr[:] = self
-        if self.tz:
-            tz_offset = datetime.datetime.now(tz).utcoffset()
-            seconds_offset = tz_offset.total_seconds() if tz_offset is not None else 0
-            np_offset = np.timedelta64(int(np.abs(seconds_offset)), 's')
-            
-            if seconds_offset < 0:
-                offset_arr =  arr - np_offset 
-            else:
-                offset_arr = arr + np_offset 
-            
-            offset_arr = offset_arr.tolist() # mypy throws a type-checking error here
-            replaced_arr = [dt.replace(tzinfo=None).isoformat() for dt in offset_arr]
-            np.savetxt(fp, replaced_arr, fmt='%s')
-        else: 
+
+        if not self.tz:
             np.savetxt(fp, arr)
+            return 
+        
+        tz_offset = datetime.datetime.now(tz).utcoffset()
+        seconds_offset = tz_offset.total_seconds() if tz_offset is not None else 0
+        np_offset = np.timedelta64(int(np.abs(seconds_offset)), 's')
+        
+        if seconds_offset < 0:
+            offset_arr =  arr - np_offset 
+        else:
+            offset_arr = arr + np_offset 
+        
+        offset_arr = offset_arr.tolist() # mypy throws a type-checking error here
+        replaced_arr = [dt.replace(tzinfo=None).isoformat() for dt in offset_arr]
+        np.savetxt(fp, replaced_arr, fmt='%s')
     
     @staticmethod
     def from_array(input_array: np.typing.NDArray[Union[np.number, np.datetime64]], tz: Union[datetime.tzinfo, None]=None): 
@@ -176,11 +180,12 @@ class DatetimeLikeArray(np.ndarray):
             fp: The file-like object, path name, or Path in which to read
             tz: Timezone information that the original array is in
         """
-        if tz:
-            dtype_ = 'datetime64[s]' if not dtype else dtype
-            
-            data = np.loadtxt(fp, dtype=dtype_)
-            return DatetimeLikeArray.from_array(input_array=data, tz=tz)
+        if not tz:
+            data = np.loadtxt(fp, dtype=dtype)
+            return DatetimeLikeArray.from_array(input_array=data)
         
-        data = np.loadtxt(fp, dtype=dtype)
+        dtype_ = 'datetime64[s]' if not dtype else dtype
+        
+        data = np.loadtxt(fp, dtype=dtype_)
+        return DatetimeLikeArray.from_array(input_array=data, tz=tz)
 
