@@ -4,7 +4,6 @@ This module provides simple utilities for processing TimeSeries instances
 
 
 from dataclasses import dataclass, field
-from typing import Union
 
 import numpy as np
 

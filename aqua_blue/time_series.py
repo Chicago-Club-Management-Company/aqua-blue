@@ -10,7 +10,6 @@ from dataclasses import dataclass
 import numpy as np
 
 from zoneinfo import ZoneInfo
-import datetime
 
 from .datetimelikearray import DatetimeLikeArray
 
@@ -34,8 +33,8 @@ class TimeSeries:
     def __post_init__(self):
         # If List[float] | List[int] | List[datetime] are passed, convert to NDArray, NDArray and TZArray respectively 
         self.times = DatetimeLikeArray(self.times)
-        
-        timesteps = np.array(np.diff(self.times))
+
+        timesteps = np.diff(self.times)
         
         # std and mean does not work with timedelta64, but casting to float converts timedelta64 to amount of seconds offset
         if not np.isclose(np.std(timesteps.astype(float)), 0.0):
@@ -110,10 +109,14 @@ class TimeSeries:
         """
         
         data = np.loadtxt(fp, delimiter=",")
-        times = data[:, time_index]
+        times_ = data[:, time_index]
+        
+        return TimeSeries(
+            dependent_variable=np.delete(data, obj=time_index, axis=1),
+            times=DatetimeLikeArray.from_array(times_, tz)
+        )
 
-        dependent_variable=np.delete(data, obj=time_index, axis=1),
-        times=DatetimeLikeArray.from_fp(times, tz)
+        
 
     @property
     def timestep(self) -> float:
@@ -128,7 +131,7 @@ class TimeSeries:
         return self.times[1] - self.times[0]
     
     def __eq__(self, other) -> bool:
-        return (self.times == other.times) and bool(np.all(np.isclose(self.dependent_variable, other.dependent_variable)))
+        return self.times == other.times and bool(np.all(np.isclose(self.dependent_variable, other.dependent_variable)))
         
     def __getitem__(self, key):
         

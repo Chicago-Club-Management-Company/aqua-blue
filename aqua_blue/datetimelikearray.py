@@ -20,12 +20,12 @@ class DatetimeLikeArray(np.ndarray):
     requirements, not for timezone NumPy integration in general. 
     
     """
-    tz: datetime.tzinfo = None
+    tz: Union[datetime.tzinfo, None] = None
     """ 
     Store the timezone information for the array. Default is None.
     """
     
-    tz_offset: datetime.timedelta = None
+    tz_offset: Union[datetime.timedelta, None] = None
     """ 
     Store the timezone offset information for the array. Default is None
     """
@@ -51,7 +51,7 @@ class DatetimeLikeArray(np.ndarray):
         
         # Purge the timezone information from the datetime objects
         generator = (dt.replace(tzinfo=None).isoformat() for dt in input_array)
-        datetime64_array = np.fromiter(generator, dtype=np.datetime64)
+        datetime64_array = np.fromiter(generator, dtype=dtype)
         
         tz_offset_ = datetime.datetime.now(tz_).utcoffset()
         seconds_offset = tz_offset_.total_seconds() if tz_offset_ else 0
@@ -82,11 +82,16 @@ class DatetimeLikeArray(np.ndarray):
         return f"{self.__class__.__name__}({super().__repr__()})"
     
     def __eq__(self, other) -> bool: 
-        if self.tz:
+
+        if self.tz and other.tz:
             # Due to .tzinfo being abstract, we compare the offsets rather than the timezone objects themselves
-            return super().__eq__(other).all() and datetime.datetime.now(self.tz).utcoffset() == datetime.datetime.now(other.tz).utcoffset()
+            return bool(np.all(super().__eq__(other))) and datetime.datetime.now(self.tz).utcoffset() == datetime.datetime.now(other.tz).utcoffset()
         
-        return super.__eq__(other).all()
+        # This is to handle the case where one of them is timezone aware, and the other one is made of floats
+        if self.tz or other.tz:
+            return False
+        
+        return bool(np.all(super.__eq__(other)))
     
     def astimezone(self, tz: datetime.tzinfo):
         if not self.tz :
@@ -146,7 +151,7 @@ class DatetimeLikeArray(np.ndarray):
         else: 
             np.savetxt(fp, arr)
     
-    @classmethod
+    @staticmethod
     def from_array(arr: np.typing.NDArray[Union[np.number, np.datetime64]], tz: datetime.tzinfo=None): 
         """ 
         Convert a numpy array to a DatetimeLikeArray instance
@@ -160,9 +165,9 @@ class DatetimeLikeArray(np.ndarray):
         if tz: 
             array = [dt.replace(tzinfo=tz) for dt in array]
         
-        return DatetimeLikeArray(array)
+        return DatetimeLikeArray(array, arr.dtype)
     
-    @classmethod
+    @staticmethod
     def from_fp(fp: Union[IO, str, Path], dtype,  tz: datetime.tzinfo=None):
         """ 
         Load a text file and convert it to a DatetimeLikeArray instance
