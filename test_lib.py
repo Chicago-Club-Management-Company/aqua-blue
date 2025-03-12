@@ -36,28 +36,6 @@ def datetime_arr():
 
     return times_ 
 
-@pytest.fixture
-def datetime_series(): 
-    times_ = datetimelikearray.DatetimeLikeArray.from_array(
-        input_array=np.arange(
-            np.datetime64('2021-01-01T00:00:00'), 
-            np.datetime64('2021-01-20T00:00:00'), 
-            np.timedelta64(1, 'D'), 
-            dtype = 'datetime64[s]'
-        ),
-        tz=ZoneInfo("America/New_York")
-    )
-    
-    steps = list(range(times_.size))
-
-    dependent_variables = np.vstack((np.cos(steps), np.sin(steps))).T
-    
-    return time_series.TimeSeries(
-        dependent_variable=dependent_variables, 
-        times=times_
-    )
-
-
 def test_non_uniform_timestep_error():
     
     with pytest.raises(ValueError):
@@ -181,9 +159,10 @@ def test_timeseries_slice_assignment():
     ts[:2] = new_ts
     assert np.all(ts.dependent_variable == np.array([[9, 9], [8, 8], [5, 6], [7, 8]]))
 
+# Datetime Integration Tests
 
-def test_datetime_time_series(cosine_sine_series):
-    
+def test_datetime_time_series_from_list(cosine_sine_series):
+    # Starting from a list of datetime objects
     time_init = datetime(
         year=2025,
         month=3,
@@ -197,6 +176,20 @@ def test_datetime_time_series(cosine_sine_series):
         times=[time_init + step * timedelta(days=1.0) for step in range(10)]
     )
 
+def test_datetime_time_series_from_array(cosine_sine_series):
+    # Starting from a NumPy array of datetime objects
+    time_init = datetime(
+        year=2025,
+        month=3,
+        day=1,
+        hour=12,
+        tzinfo=ZoneInfo("America/Chicago")
+    )
+    
+    _ = time_series.TimeSeries(
+        dependent_variable=cosine_sine_series.dependent_variable,
+        times=np.array([time_init + step * timedelta(days=1.0) for step in range(10)])
+    )
 
 def test_datetime_writetolist(datetime_arr):
     list_series = datetime_arr.to_list()
@@ -216,3 +209,23 @@ def test_datetime_fileio(datetime_arr):
     
     assert loaded_series == datetime_arr
 
+
+def datetime_series(): 
+    times_ = datetimelikearray.DatetimeLikeArray.from_array(
+        input_array=np.arange(
+            np.datetime64('2021-01-01T00:00:00'), 
+            np.datetime64('2021-01-20T00:00:00'), 
+            np.timedelta64(1, 'D'), 
+            dtype = 'datetime64[s]'
+        ),
+        tz=ZoneInfo("America/New_York")
+    )
+    
+    steps = list(range(times_.size))
+
+    dependent_variables = np.vstack((np.cos(steps), np.sin(steps))).T
+    
+    return time_series.TimeSeries(
+        dependent_variable=dependent_variables, 
+        times=times_
+    )
