@@ -72,6 +72,7 @@ class Model:
         self.timestep = input_time_series.timestep
         self.final_time = input_time_series.times[-1]
         self.tz = input_time_series.times.tz
+        self.times_dtype = input_time_series.times.dtype
         self.initial_guess = time_series_array[-1, :]
     
     def predict(self, horizon: int) -> TimeSeries:
@@ -100,9 +101,9 @@ class Model:
             start=self.final_time + self.timestep,
             stop=self.final_time + (horizon + 1) * self.timestep,
             step=self.timestep,
-            dtype=type(self.final_time)
+            dtype=self.times_dtype
         ),
-        self.tz
+        tz=self.tz, 
         )
         
         return TimeSeries(

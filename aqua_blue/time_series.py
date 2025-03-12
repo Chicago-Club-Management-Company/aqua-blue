@@ -10,6 +10,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from zoneinfo import ZoneInfo
+from datetime import datetime
 
 from .datetimelikearray import DatetimeLikeArray
 
@@ -31,9 +32,14 @@ class TimeSeries:
     times: DatetimeLikeArray
     
     def __post_init__(self):
-        # If List[float] | List[int] | List[datetime] are passed, convert to NDArray, NDArray and TZArray respectively 
-        self.times = DatetimeLikeArray(self.times)
+        # If List[float] | List[int] | List[datetime] are passed, convert to NDArray, NDArray and DatetimeLikeArray respectively 
+        if isinstance(self.times[0], datetime):
+            # For some reason, NumPy does not automatically handle datetime object dtypes as np.datetime64.
+            dtype_ = 'datetime64[s]'
+        else: 
+            dtype_ = np.dtype(type(self.times[0]))
 
+        self.times = DatetimeLikeArray(self.times, dtype=dtype_)
         timesteps = np.diff(self.times)
         
         # std and mean does not work with timedelta64, but casting to float converts timedelta64 to amount of seconds offset
@@ -89,7 +95,7 @@ class TimeSeries:
         return self.dependent_variable.shape[1]
 
     @classmethod
-    def from_csv(cls, fp: Union[IO, str, Path], tz: ZoneInfo = ZoneInfo("UTC"), time_index: int = 0):
+    def from_csv(cls, fp: Union[IO, str, Path], tz: Union[ZoneInfo, None]=None, time_index: int = 0):
 
         """
         Method for loading in a TimeSeries instance from a comma-separated value (csv) file
@@ -97,7 +103,7 @@ class TimeSeries:
         Args:
             fp (Union[IO, str, Path]):
                 The file-like object, path name, or Path in which to read
-
+            
             time_index (int):
                 The column index corresponding to the time column. Defaults to 0
 
@@ -110,7 +116,6 @@ class TimeSeries:
         
         data = np.loadtxt(fp, delimiter=",")
         times_ = data[:, time_index]
-        
         return TimeSeries(
             dependent_variable=np.delete(data, obj=time_index, axis=1),
             times=DatetimeLikeArray.from_array(times_, tz)

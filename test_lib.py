@@ -7,14 +7,14 @@ import numpy as np
 
 from zoneinfo import ZoneInfo
 
-from aqua_blue import time_series, utilities, reservoirs, readouts, models
+from aqua_blue import time_series, utilities, reservoirs, readouts, models, datetimelikearray
 
 
 @pytest.fixture
 def cosine_sine_series():
 
     steps = list(range(10))
-
+    
     dependent_variables = np.vstack((np.cos(steps), np.sin(steps))).T
 
     return time_series.TimeSeries(
@@ -22,9 +22,44 @@ def cosine_sine_series():
         times=steps
     )
 
+@pytest.fixture
+def datetime_arr(): 
+    times_ = datetimelikearray.DatetimeLikeArray.from_array(
+        input_array=np.arange(
+            np.datetime64('2021-01-01T00:00:00'), 
+            np.datetime64('2021-01-20T00:00:00'), 
+            np.timedelta64(1, 'D'), 
+            dtype = 'datetime64[s]'
+        ),
+        tz=ZoneInfo("America/New_York")
+    )
+
+    return times_ 
+
+@pytest.fixture
+def datetime_series(): 
+    times_ = datetimelikearray.DatetimeLikeArray.from_array(
+        input_array=np.arange(
+            np.datetime64('2021-01-01T00:00:00'), 
+            np.datetime64('2021-01-20T00:00:00'), 
+            np.timedelta64(1, 'D'), 
+            dtype = 'datetime64[s]'
+        ),
+        tz=ZoneInfo("America/New_York")
+    )
+    
+    steps = list(range(times_.size))
+
+    dependent_variables = np.vstack((np.cos(steps), np.sin(steps))).T
+    
+    return time_series.TimeSeries(
+        dependent_variable=dependent_variables, 
+        times=times_
+    )
+
 
 def test_non_uniform_timestep_error():
-
+    
     with pytest.raises(ValueError):
         _ = time_series.TimeSeries(dependent_variable=np.ones(10), times=np.logspace(0, 1, 10))
 
@@ -36,13 +71,13 @@ def test_zero_timestep_error():
 
 
 def test_can_save_and_load_time_series():
-
+    
     t_original = time_series.TimeSeries(dependent_variable=np.ones(shape=(10, 2)), times=np.arange(10))
     with BytesIO() as buffer:
         t_original.save(buffer)
         buffer.seek(0)
         t_loaded = time_series.TimeSeries.from_csv(buffer)
-
+    
     assert t_original == t_loaded
 
 
@@ -148,7 +183,7 @@ def test_timeseries_slice_assignment():
 
 
 def test_datetime_time_series(cosine_sine_series):
-
+    
     time_init = datetime(
         year=2025,
         month=3,
@@ -156,8 +191,28 @@ def test_datetime_time_series(cosine_sine_series):
         hour=12,
         tzinfo=ZoneInfo("America/Chicago")
     )
-
+    
     _ = time_series.TimeSeries(
         dependent_variable=cosine_sine_series.dependent_variable,
         times=[time_init + step * timedelta(days=1.0) for step in range(10)]
     )
+
+
+def test_datetime_writetolist(datetime_arr):
+    list_series = datetime_arr.to_list()
+    
+    time_init = datetime(2021, 1, 1, 0, 0, 0, tzinfo = ZoneInfo("America/New_York")) 
+    interval =  timedelta(days=1.0)
+    
+    times = [time_init + step * interval for step in range(datetime_arr.size)]
+    
+    assert list_series == times 
+
+def test_datetime_fileio(datetime_arr): 
+    with BytesIO() as buffer:
+        datetime_arr.to_file(buffer, tz=ZoneInfo("America/New_York"))
+        buffer.seek(0)
+        loaded_series = datetimelikearray.DatetimeLikeArray.from_fp(buffer, tz=ZoneInfo("America/New_York"), dtype='datetime64')
+    
+    assert loaded_series == datetime_arr
+

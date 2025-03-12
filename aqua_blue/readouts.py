@@ -10,7 +10,7 @@ import numpy as np
 
 @dataclass
 class Readout(ABC):
-
+    
     """
     Abstract readout layer, defining reservoir state -> output state mapping
     """

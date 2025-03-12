@@ -52,7 +52,6 @@ class DatetimeLikeArray(np.ndarray):
         # Purge the timezone information from the datetime objects
         generator = (dt.replace(tzinfo=None).isoformat() for dt in input_array)
         datetime64_array = np.fromiter(generator, dtype=dtype)
-        
         tz_offset_ = datetime.datetime.now(tz_).utcoffset()
         seconds_offset = tz_offset_.total_seconds() if tz_offset_ else 0
         np_offset = np.timedelta64(int(np.abs(seconds_offset)), 's')
@@ -69,7 +68,6 @@ class DatetimeLikeArray(np.ndarray):
         # Set the timezone and offset of the array
         obj.tz = tz_
         obj.tz_offset = tz_offset_ if tz_offset_ else datetime.timedelta(0)
-        
         return obj
     
     def __repr__(self) -> str:
@@ -87,7 +85,7 @@ class DatetimeLikeArray(np.ndarray):
             # Due to .tzinfo being abstract, we compare the offsets rather than the timezone objects themselves
             return bool(np.all(super().__eq__(other))) and datetime.datetime.now(self.tz).utcoffset() == datetime.datetime.now(other.tz).utcoffset()
         
-        if isinstance(np.typing.NDArray, other):
+        if isinstance(other, np.ndarray):
             return bool(np.all(super().__eq__(other)))
         
         else:
@@ -154,7 +152,7 @@ class DatetimeLikeArray(np.ndarray):
             np.savetxt(fp, arr)
     
     @staticmethod
-    def from_array(arr: np.typing.NDArray[Union[np.number, np.datetime64]], tz: Union[datetime.tzinfo, None]=None): 
+    def from_array(input_array: np.typing.NDArray[Union[np.number, np.datetime64]], tz: Union[datetime.tzinfo, None]=None): 
         """ 
         Convert a numpy array to a DatetimeLikeArray instance
         
@@ -162,12 +160,12 @@ class DatetimeLikeArray(np.ndarray):
             arr: numpy array to be converted
             tz: timezone information that the original array is in
         """
-        array = arr.tolist() 
+        array = input_array.tolist() 
         
         if tz: 
             array = [dt.replace(tzinfo=tz) for dt in array]
         
-        return DatetimeLikeArray(array, arr.dtype)
+        return DatetimeLikeArray(input_array=array, dtype=input_array.dtype)
     
     @staticmethod
     def from_fp(fp: Union[IO, str, Path], dtype,  tz: Union[datetime.tzinfo, None]=None):
@@ -182,7 +180,7 @@ class DatetimeLikeArray(np.ndarray):
             dtype_ = 'datetime64[s]' if not dtype else dtype
             
             data = np.loadtxt(fp, dtype=dtype_)
-            return DatetimeLikeArray.from_array(data, tz)
+            return DatetimeLikeArray.from_array(input_array=data, tz=tz)
         
         data = np.loadtxt(fp, dtype=dtype)
 
