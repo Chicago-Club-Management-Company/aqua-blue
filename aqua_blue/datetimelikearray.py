@@ -51,7 +51,7 @@ class DatetimeLikeArray(np.ndarray):
         
         # Purge the timezone information from the datetime objects
         generator = (dt.replace(tzinfo=None).isoformat() for dt in input_array)
-        datetime64_array = np.from_iter(generator, dtype=np.datetime64)
+        datetime64_array = np.fromiter(generator, dtype=np.datetime64)
         
         tz_offset_ = datetime.datetime.now(tz_).utcoffset()
         seconds_offset = tz_offset_.total_seconds() if tz_offset_ else 0
@@ -140,7 +140,7 @@ class DatetimeLikeArray(np.ndarray):
             else:
                 offset_arr = arr + np_offset 
             
-            offset_arr = super(DatetimeLikeArray, offset_arr).tolist() # mypy throws a type-checking error here
+            offset_arr = offset_arr.tolist() # mypy throws a type-checking error here
             replaced_arr = [dt.replace(tzinfo=None).isoformat() for dt in offset_arr]
             np.savetxt(fp, replaced_arr, fmt='%s')
         else: 

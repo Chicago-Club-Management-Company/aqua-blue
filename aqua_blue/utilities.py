@@ -9,7 +9,6 @@ from typing import Union
 import numpy as np
 
 from .time_series import TimeSeries
-from .datetimelikearray import TZArray
 
 
 

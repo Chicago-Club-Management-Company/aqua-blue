@@ -71,7 +71,7 @@ class Model:
         self.readout.coefficients = w_out_transpose.T
         self.timestep = input_time_series.timestep
         self.final_time = input_time_series.times[-1]
-        self.tz = input_time_series.times.tz if input_time_series.times.tz is not None else None
+        self.tz = input_time_series.times.tz
         self.initial_guess = time_series_array[-1, :]
     
     def predict(self, horizon: int) -> TimeSeries:
@@ -95,7 +95,15 @@ class Model:
                 self.reservoir.update_reservoir(predictions[i-1, :])
             )
         
-        times_ = DatetimeLikeArray.from_array(np.arange(start=(self.final_time + self.timestep), stop=(self.final_time + (horizon+1)*self.timestep), step=self.timestep, dtype=type(self.final_time)), self.tz)
+        times_ = DatetimeLikeArray.from_array(
+        np.arange(
+            start=self.final_time + self.timestep,
+            stop=self.final_time + (horizon + 1) * self.timestep,
+            step=self.timestep,
+            dtype=type(self.final_time)
+        ),
+        self.tz
+        )
         
         return TimeSeries(
             dependent_variable=predictions,
