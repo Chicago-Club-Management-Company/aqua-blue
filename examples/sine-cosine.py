@@ -6,12 +6,8 @@ from zoneinfo import ZoneInfo
 
 import aqua_blue
 
-
 def main():
     
-#################################################################################
-#                            TIME SERIES GENERATION                             #
-#################################################################################
     start_date = datetime.datetime.now().astimezone(ZoneInfo("Indian/Maldives"))
 
     # Generate 10,000 datetime objects, each 1 minute apart
@@ -21,10 +17,6 @@ def main():
     time_series = aqua_blue.TimeSeries(dependent_variable=y, times=t)
     normalizer = aqua_blue.utilities.Normalizer()
     time_series = normalizer.normalize(time_series)
-    
-#################################################################################
-#                              MODEL TRAINING                                   #
-#################################################################################
     
     model = aqua_blue.models.Model(
         reservoir=aqua_blue.reservoirs.DynamicalReservoir(
@@ -38,9 +30,6 @@ def main():
     prediction = model.predict(horizon=1_000)
     prediction = normalizer.denormalize(prediction)
     
-#################################################################################
-#                              MODEL EVALUATION                                 #
-#################################################################################
 
     actual_future = np.vstack((
         (np.cos(np.arange(a[-1], a[-1]+10, step=0.01))+1, np.sin(np.arange(a[-1], a[-1]+10, step=0.01))-1)
