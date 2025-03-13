@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.5">
+<title>aqua_blue.datetimelikearray API documentation</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>aqua_blue.datetimelikearray</code></h1>
+</header>
+<section id="section-intro">
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="aqua_blue.datetimelikearray.DatetimeLikeArray"><code class="flex name class">
+<span>class <span class="ident">DatetimeLikeArray</span></span>
+<span>(</span><span>input_array: List[~DatetimeLike],<br>dtype,<br>buffer=None,<br>offset=0,<br>strides=None,<br>order=None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class DatetimeLikeArray(np.ndarray):
+    &#34;&#34;&#34;
+    Timezone-Aware Wrapper for NumPy Arrays. 
+    Timezone awareness is a deprecated NumPy feature due to the deprecation of pytz. 
+    This subclass provides a workaround for this issue by storing the timezone information in the array.
+    The datetime objects are stored in UTC time and converted to the specified timezone when accessed.
+    This is a very simple implementation that works for 1 dimensional arrays. It is meant to satisfy our datetime processing 
+    requirements, not for timezone NumPy integration in general. 
+    
+    &#34;&#34;&#34;
+    tz: Union[datetime.tzinfo, None] = None
+    &#34;&#34;&#34; 
+    Store the timezone information for the array. Default is None.
+    &#34;&#34;&#34;
+    
+    tz_offset: Union[datetime.timedelta, None] = None
+    &#34;&#34;&#34; 
+    Store the timezone offset information for the array. Default is None
+    &#34;&#34;&#34;
+    
+    
+    def __new__(cls, input_array: List[DatetimeLike], dtype, buffer=None, offset=0, strides=None, order=None):
+       
+        if not isinstance(input_array[0], datetime.datetime):
+            # If you pass List[float] treat it like a normal NumPy array
+            new_arr = np.array(input_array)
+            obj = super().__new__(cls, new_arr.shape, dtype, buffer, offset, strides, order)
+            obj[:] = new_arr
+            return obj
+        
+        # If you pass List[datetime.datetime], then create a timezone aware array of np.datetime64
+        # Store the timezone information of the first element - this means that all elements must belong to the same timezone.
+        tz_ = input_array[0].tzinfo if input_array[0].tzinfo else ZoneInfo(&#39;UTC&#39;) 
+        
+        for dt in input_array:
+            current_tz = dt.tzinfo if dt.tzinfo else ZoneInfo(&#39;UTC&#39;)
+            if current_tz != tz_:
+                raise ValueError(&#34;All elements must belong to the same timezone.&#34;)
+        
+        # Purge the timezone information from the datetime objects
+        generator = (dt.replace(tzinfo=None).isoformat() for dt in input_array)
+        datetime64_array = np.fromiter(generator, dtype=dtype)
+        tz_offset_ = datetime.datetime.now(tz_).utcoffset()
+        seconds_offset = tz_offset_.total_seconds() if tz_offset_ else 0
+        np_offset = np.timedelta64(int(np.abs(seconds_offset)), &#39;s&#39;)
+        
+        if seconds_offset &lt; 0:
+            datetime64_array += np_offset
+        else:
+            datetime64_array -= np_offset
+        
+        # Initialize an NDArray and populate with the datetime values
+        obj = super().__new__(cls, datetime64_array.shape, dtype, buffer, offset, strides, order)
+        obj[:] = datetime64_array
+        
+        # Set the timezone and offset of the array
+        obj.tz = tz_
+        obj.tz_offset = tz_offset_ if tz_offset_ else datetime.timedelta(0)
+        return obj
+    
+    def __repr__(self) -&gt; str:
+        &#34;&#34;&#34; 
+        Update the representation of the array to include the timezone information
+        &#34;&#34;&#34;
+        if self.tz:
+            return f&#34;{self.__class__.__name__}({super().__repr__()}, tz={self.tz})&#34;
+        
+        return f&#34;{self.__class__.__name__}({super().__repr__()})&#34;
+    
+    def __eq__(self, other) -&gt; bool: 
+
+        if self.tz and other.tz:
+            # Due to .tzinfo being abstract, we compare the offsets rather than the timezone objects themselves
+            return bool(np.all(super().__eq__(other))) and datetime.datetime.now(self.tz).utcoffset() == datetime.datetime.now(other.tz).utcoffset()
+        
+        if isinstance(other, np.ndarray):
+            return bool(np.all(super().__eq__(other)))
+        
+        else:
+            return False
+    
+    def astimezone(self, tz: datetime.tzinfo):
+        if not self.tz :
+            raise ValueError(f&#34;{self.__class__.__name__} of type {self.dtype} does not support timezones.&#34;)
+        
+        self.tz = tz
+        tz_offset_ = datetime.datetime.now(tz).utcoffset()
+        self.tz_offset = tz_offset_ if tz_offset_ else datetime.timedelta(0)
+    
+    def to_list(self) -&gt; List[DatetimeLike]:
+        &#34;&#34;&#34; 
+        Convert the array back to a list of DatetimeLike objects with timezone information (if necessary)
+        &#34;&#34;&#34;
+        arr = np.zeros_like(self)
+        arr[:] = self
+
+        if not self.tz:
+            return arr.tolist()
+            
+        # Check if it&#39;s None for type-checking
+        tz_offset: datetime.timedelta = self.tz_offset if self.tz_offset else datetime.timedelta(0)
+        np_offset = np.timedelta64(int(np.abs(tz_offset.total_seconds())), &#39;s&#39;)
+        
+        if tz_offset.total_seconds() &lt; 0:
+            offset_arr = arr - np_offset
+        else:
+            offset_arr = arr + np_offset
+        
+        list_arr = offset_arr.tolist() # mypy throws a type-checking error here
+        converted_arr = [dt.replace(tzinfo=self.tz) for dt in list_arr]
+        
+        return converted_arr
+
+
+    
+    def to_file(self, fp: Union[IO, str, Path], tz: Union[datetime.tzinfo, None]=None):
+        &#34;&#34;&#34; 
+        Save a DatetimeLikeArray instance to a text file
+        
+        Args:
+            self: DatetimeLikeArray instance to be saved
+            fp: The file-like object, path name, or Path in which to save
+            tz: Timezone information to write the data in
+        &#34;&#34;&#34;
+
+        arr = np.zeros_like(self)
+        arr[:] = self
+
+        if not self.tz:
+            np.savetxt(fp, arr)
+            return 
+        
+        tz_offset = datetime.datetime.now(tz).utcoffset()
+        seconds_offset = tz_offset.total_seconds() if tz_offset is not None else 0
+        np_offset = np.timedelta64(int(np.abs(seconds_offset)), &#39;s&#39;)
+        
+        if seconds_offset &lt; 0:
+            offset_arr =  arr - np_offset 
+        else:
+            offset_arr = arr + np_offset 
+        
+        offset_arr = offset_arr.tolist() # mypy throws a type-checking error here
+        replaced_arr = [dt.replace(tzinfo=None).isoformat() for dt in offset_arr]
+        np.savetxt(fp, replaced_arr, fmt=&#39;%s&#39;)
+    
+    @staticmethod
+    def from_array(input_array: np.typing.NDArray[Union[np.number, np.datetime64]], tz: Union[datetime.tzinfo, None]=None): 
+        &#34;&#34;&#34; 
+        Convert a numpy array to a DatetimeLikeArray instance
+        
+        Args:
+            arr: numpy array to be converted
+            tz: timezone information that the original array is in
+        &#34;&#34;&#34;
+        array = input_array.tolist() 
+        
+        if tz: 
+            array = [dt.replace(tzinfo=tz) for dt in array]
+        
+        return DatetimeLikeArray(input_array=array, dtype=input_array.dtype)
+    
+    @staticmethod
+    def from_fp(fp: Union[IO, str, Path], dtype,  tz: Union[datetime.tzinfo, None]=None):
+        &#34;&#34;&#34; 
+        Load a text file and convert it to a DatetimeLikeArray instance
+        
+        Args:
+            fp: The file-like object, path name, or Path in which to read
+            tz: Timezone information that the original array is in
+        &#34;&#34;&#34;
+        if not tz:
+            data = np.loadtxt(fp, dtype=dtype)
+            return DatetimeLikeArray.from_array(input_array=data)
+        
+        dtype_ = &#39;datetime64[s]&#39; if not dtype else dtype
+        
+        data = np.loadtxt(fp, dtype=dtype_)
+        return DatetimeLikeArray.from_array(input_array=data, tz=tz)</code></pre>
+</details>
+<div class="desc"><p>Timezone-Aware Wrapper for NumPy Arrays.
+Timezone awareness is a deprecated NumPy feature due to the deprecation of pytz.
+This subclass provides a workaround for this issue by storing the timezone information in the array.
+The datetime objects are stored in UTC time and converted to the specified timezone when accessed.
+This is a very simple implementation that works for 1 dimensional arrays. It is meant to satisfy our datetime processing
+requirements, not for timezone NumPy integration in general.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>numpy.ndarray</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="aqua_blue.datetimelikearray.DatetimeLikeArray.tz"><code class="name">var <span class="ident">tz</span> : datetime.tzinfo | None</code></dt>
+<dd>
+<div class="desc"><p>Store the timezone information for the array. Default is None.</p></div>
+</dd>
+<dt id="aqua_blue.datetimelikearray.DatetimeLikeArray.tz_offset"><code class="name">var <span class="ident">tz_offset</span> : datetime.timedelta | None</code></dt>
+<dd>
+<div class="desc"><p>Store the timezone offset information for the array. Default is None</p></div>
+</dd>
+</dl>
+<h3>Static methods</h3>
+<dl>
+<dt id="aqua_blue.datetimelikearray.DatetimeLikeArray.from_array"><code class="name flex">
+<span>def <span class="ident">from_array</span></span>(<span>input_array: numpy.ndarray[typing.Any, numpy.dtype[numpy.number | numpy.datetime64]],<br>tz: datetime.tzinfo | None = None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def from_array(input_array: np.typing.NDArray[Union[np.number, np.datetime64]], tz: Union[datetime.tzinfo, None]=None): 
+    &#34;&#34;&#34; 
+    Convert a numpy array to a DatetimeLikeArray instance
+    
+    Args:
+        arr: numpy array to be converted
+        tz: timezone information that the original array is in
+    &#34;&#34;&#34;
+    array = input_array.tolist() 
+    
+    if tz: 
+        array = [dt.replace(tzinfo=tz) for dt in array]
+    
+    return DatetimeLikeArray(input_array=array, dtype=input_array.dtype)</code></pre>
+</details>
+<div class="desc"><p>Convert a numpy array to a DatetimeLikeArray instance</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>arr</code></strong></dt>
+<dd>numpy array to be converted</dd>
+<dt><strong><code>tz</code></strong></dt>
+<dd>timezone information that the original array is in</dd>
+</dl></div>
+</dd>
+<dt id="aqua_blue.datetimelikearray.DatetimeLikeArray.from_fp"><code class="name flex">
+<span>def <span class="ident">from_fp</span></span>(<span>fp: <class 'IO'> | str | pathlib.Path, dtype, tz: datetime.tzinfo | None = None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def from_fp(fp: Union[IO, str, Path], dtype,  tz: Union[datetime.tzinfo, None]=None):
+    &#34;&#34;&#34; 
+    Load a text file and convert it to a DatetimeLikeArray instance
+    
+    Args:
+        fp: The file-like object, path name, or Path in which to read
+        tz: Timezone information that the original array is in
+    &#34;&#34;&#34;
+    if not tz:
+        data = np.loadtxt(fp, dtype=dtype)
+        return DatetimeLikeArray.from_array(input_array=data)
+    
+    dtype_ = &#39;datetime64[s]&#39; if not dtype else dtype
+    
+    data = np.loadtxt(fp, dtype=dtype_)
+    return DatetimeLikeArray.from_array(input_array=data, tz=tz)</code></pre>
+</details>
+<div class="desc"><p>Load a text file and convert it to a DatetimeLikeArray instance</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>fp</code></strong></dt>
+<dd>The file-like object, path name, or Path in which to read</dd>
+<dt><strong><code>tz</code></strong></dt>
+<dd>Timezone information that the original array is in</dd>
+</dl></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="aqua_blue.datetimelikearray.DatetimeLikeArray.astimezone"><code class="name flex">
+<span>def <span class="ident">astimezone</span></span>(<span>self, tz: datetime.tzinfo)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def astimezone(self, tz: datetime.tzinfo):
+    if not self.tz :
+        raise ValueError(f&#34;{self.__class__.__name__} of type {self.dtype} does not support timezones.&#34;)
+    
+    self.tz = tz
+    tz_offset_ = datetime.datetime.now(tz).utcoffset()
+    self.tz_offset = tz_offset_ if tz_offset_ else datetime.timedelta(0)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="aqua_blue.datetimelikearray.DatetimeLikeArray.to_file"><code class="name flex">
+<span>def <span class="ident">to_file</span></span>(<span>self, fp: <class 'IO'> | str | pathlib.Path, tz: datetime.tzinfo | None = None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_file(self, fp: Union[IO, str, Path], tz: Union[datetime.tzinfo, None]=None):
+    &#34;&#34;&#34; 
+    Save a DatetimeLikeArray instance to a text file
+    
+    Args:
+        self: DatetimeLikeArray instance to be saved
+        fp: The file-like object, path name, or Path in which to save
+        tz: Timezone information to write the data in
+    &#34;&#34;&#34;
+
+    arr = np.zeros_like(self)
+    arr[:] = self
+
+    if not self.tz:
+        np.savetxt(fp, arr)
+        return 
+    
+    tz_offset = datetime.datetime.now(tz).utcoffset()
+    seconds_offset = tz_offset.total_seconds() if tz_offset is not None else 0
+    np_offset = np.timedelta64(int(np.abs(seconds_offset)), &#39;s&#39;)
+    
+    if seconds_offset &lt; 0:
+        offset_arr =  arr - np_offset 
+    else:
+        offset_arr = arr + np_offset 
+    
+    offset_arr = offset_arr.tolist() # mypy throws a type-checking error here
+    replaced_arr = [dt.replace(tzinfo=None).isoformat() for dt in offset_arr]
+    np.savetxt(fp, replaced_arr, fmt=&#39;%s&#39;)</code></pre>
+</details>
+<div class="desc"><p>Save a DatetimeLikeArray instance to a text file</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>self</code></strong></dt>
+<dd>DatetimeLikeArray instance to be saved</dd>
+<dt><strong><code>fp</code></strong></dt>
+<dd>The file-like object, path name, or Path in which to save</dd>
+<dt><strong><code>tz</code></strong></dt>
+<dd>Timezone information to write the data in</dd>
+</dl></div>
+</dd>
+<dt id="aqua_blue.datetimelikearray.DatetimeLikeArray.to_list"><code class="name flex">
+<span>def <span class="ident">to_list</span></span>(<span>self) ‑> List[~DatetimeLike]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_list(self) -&gt; List[DatetimeLike]:
+    &#34;&#34;&#34; 
+    Convert the array back to a list of DatetimeLike objects with timezone information (if necessary)
+    &#34;&#34;&#34;
+    arr = np.zeros_like(self)
+    arr[:] = self
+
+    if not self.tz:
+        return arr.tolist()
+        
+    # Check if it&#39;s None for type-checking
+    tz_offset: datetime.timedelta = self.tz_offset if self.tz_offset else datetime.timedelta(0)
+    np_offset = np.timedelta64(int(np.abs(tz_offset.total_seconds())), &#39;s&#39;)
+    
+    if tz_offset.total_seconds() &lt; 0:
+        offset_arr = arr - np_offset
+    else:
+        offset_arr = arr + np_offset
+    
+    list_arr = offset_arr.tolist() # mypy throws a type-checking error here
+    converted_arr = [dt.replace(tzinfo=self.tz) for dt in list_arr]
+    
+    return converted_arr</code></pre>
+</details>
+<div class="desc"><p>Convert the array back to a list of DatetimeLike objects with timezone information (if necessary)</p></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="aqua_blue" href="index.html">aqua_blue</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="aqua_blue.datetimelikearray.DatetimeLikeArray" href="#aqua_blue.datetimelikearray.DatetimeLikeArray">DatetimeLikeArray</a></code></h4>
+<ul class="two-column">
+<li><code><a title="aqua_blue.datetimelikearray.DatetimeLikeArray.astimezone" href="#aqua_blue.datetimelikearray.DatetimeLikeArray.astimezone">astimezone</a></code></li>
+<li><code><a title="aqua_blue.datetimelikearray.DatetimeLikeArray.from_array" href="#aqua_blue.datetimelikearray.DatetimeLikeArray.from_array">from_array</a></code></li>
+<li><code><a title="aqua_blue.datetimelikearray.DatetimeLikeArray.from_fp" href="#aqua_blue.datetimelikearray.DatetimeLikeArray.from_fp">from_fp</a></code></li>
+<li><code><a title="aqua_blue.datetimelikearray.DatetimeLikeArray.to_file" href="#aqua_blue.datetimelikearray.DatetimeLikeArray.to_file">to_file</a></code></li>
+<li><code><a title="aqua_blue.datetimelikearray.DatetimeLikeArray.to_list" href="#aqua_blue.datetimelikearray.DatetimeLikeArray.to_list">to_list</a></code></li>
+<li><code><a title="aqua_blue.datetimelikearray.DatetimeLikeArray.tz" href="#aqua_blue.datetimelikearray.DatetimeLikeArray.tz">tz</a></code></li>
+<li><code><a title="aqua_blue.datetimelikearray.DatetimeLikeArray.tz_offset" href="#aqua_blue.datetimelikearray.DatetimeLikeArray.tz_offset">tz_offset</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.5</a>.</p>
+</footer>
+</body>
+</html>

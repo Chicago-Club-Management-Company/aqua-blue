@@ -57,7 +57,7 @@ el.replaceWith(d);
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class ShapeChangedWarning(Warning):
-
+    
     &#34;&#34;&#34;
     warn the user that TimeSeries.__post_init__ changed the shape of the dependent variable
     &#34;&#34;&#34;</code></pre>
@@ -72,7 +72,7 @@ el.replaceWith(d);
 </dd>
 <dt id="aqua_blue.time_series.TimeSeries"><code class="flex name class">
 <span>class <span class="ident">TimeSeries</span></span>
-<span>(</span><span>dependent_variable: numpy.ndarray[typing.Any, numpy.dtype[numpy.floating]],<br>times: List[float])</span>
+<span>(</span><span>dependent_variable: numpy.ndarray[typing.Any, numpy.dtype[numpy.floating]],<br>times: <a title="aqua_blue.datetimelikearray.DatetimeLikeArray" href="datetimelikearray.html#aqua_blue.datetimelikearray.DatetimeLikeArray">DatetimeLikeArray</a>)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -87,20 +87,25 @@ class TimeSeries:
     &#34;&#34;&#34;
 
     dependent_variable: np.typing.NDArray[np.floating]
-    times: List[float]
-
+    times: DatetimeLikeArray
+    
     def __post_init__(self):
+        # If List[float] | List[int] | List[datetime] are passed, convert to NDArray, NDArray and DatetimeLikeArray respectively 
+        if isinstance(self.times[0], datetime):
+            # For some reason, NumPy does not automatically handle datetime object dtypes as np.datetime64.
+            dtype_ = &#39;datetime64[s]&#39;
+        else: 
+            dtype_ = np.dtype(type(self.times[0]))
 
-        if isinstance(self.times, np.ndarray):
-            self.times = self.times.tolist()
-
-        timesteps = [t2 - t1 for t1, t2 in pairwise(self.times)]
-
-        if not np.isclose(np.std(timesteps), 0.0):
+        self.times = DatetimeLikeArray(self.times, dtype=dtype_)
+        timesteps = np.diff(self.times)
+        
+        # std and mean does not work with timedelta64, but casting to float converts timedelta64 to amount of seconds offset
+        if not np.isclose(np.std(timesteps.astype(float)), 0.0):
             raise ValueError(&#34;TimeSeries.times must be uniformly spaced&#34;)
-        if np.isclose(np.mean(timesteps), 0.0):
+        if np.isclose(np.mean(timesteps.astype(float)), 0.0):
             raise ValueError(&#34;TimeSeries.times must have a timestep greater than zero&#34;)
-
+        
         if len(self.dependent_variable.shape) == 1:
             num_steps = len(self.dependent_variable)
             self.dependent_variable = self.dependent_variable.reshape(num_steps, 1)
@@ -125,6 +130,8 @@ class TimeSeries:
                 The delimiting character in the save file. Defaults to a comma
 
         &#34;&#34;&#34;
+        # This should work just fine as long as we are writing datetime objects in UTC.
+
         np.savetxt(
             fp,
             np.vstack((self.times, self.dependent_variable.T)).T,
@@ -146,7 +153,7 @@ class TimeSeries:
         return self.dependent_variable.shape[1]
 
     @classmethod
-    def from_csv(cls, fp: Union[IO, str, Path], time_index: int = 0):
+    def from_csv(cls, fp: Union[IO, str, Path], tz: Union[ZoneInfo, None]=None, time_index: int = 0):
 
         &#34;&#34;&#34;
         Method for loading in a TimeSeries instance from a comma-separated value (csv) file
@@ -154,21 +161,25 @@ class TimeSeries:
         Args:
             fp (Union[IO, str, Path]):
                 The file-like object, path name, or Path in which to read
-
+            
             time_index (int):
                 The column index corresponding to the time column. Defaults to 0
 
+            tz (ZoneInfo):
+                The timezone to read the datetime data in
+        
         Returns:
             TimeSeries: A TimeSeries instance populated by data from the csv file
         &#34;&#34;&#34;
-
+        
         data = np.loadtxt(fp, delimiter=&#34;,&#34;)
-        times = data[:, time_index].tolist()
-
-        return cls(
+        times_ = data[:, time_index]
+        return TimeSeries(
             dependent_variable=np.delete(data, obj=time_index, axis=1),
-            times=times
+            times=DatetimeLikeArray.from_array(times_, tz)
         )
+
+        
 
     @property
     def timestep(self) -&gt; float:
@@ -181,14 +192,12 @@ class TimeSeries:
         &#34;&#34;&#34;
 
         return self.times[1] - self.times[0]
-
+    
     def __eq__(self, other) -&gt; bool:
-        return all(t1 == t2 for t1, t2 in zip(self.times, other.times)) and bool(np.all(
-            np.isclose(self.dependent_variable, other.dependent_variable)
-        ))
-
+        return self.times == other.times and bool(np.all(np.isclose(self.dependent_variable, other.dependent_variable)))
+        
     def __getitem__(self, key):
-
+        
         return TimeSeries(self.dependent_variable[key], self.times[key])
 
     def __setitem__(self, key, value):
@@ -237,11 +246,11 @@ class TimeSeries:
 
         return TimeSeries(
             dependent_variable=np.vstack((self.dependent_variable, other.dependent_variable)),
-            times=self.times + other.times
+            times= np.concatenate((self.times, other.times))
         )
 
     def __len__(self):
-
+        
         return len(self.times)</code></pre>
 </details>
 <div class="desc"><p>TimeSeries class defining a time series</p></div>
@@ -251,7 +260,7 @@ class TimeSeries:
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="aqua_blue.time_series.TimeSeries.times"><code class="name">var <span class="ident">times</span> : List[float]</code></dt>
+<dt id="aqua_blue.time_series.TimeSeries.times"><code class="name">var <span class="ident">times</span> : <a title="aqua_blue.datetimelikearray.DatetimeLikeArray" href="datetimelikearray.html#aqua_blue.datetimelikearray.DatetimeLikeArray">DatetimeLikeArray</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -259,7 +268,7 @@ class TimeSeries:
 <h3>Static methods</h3>
 <dl>
 <dt id="aqua_blue.time_series.TimeSeries.from_csv"><code class="name flex">
-<span>def <span class="ident">from_csv</span></span>(<span>fp: <class 'IO'> | str | pathlib.Path, time_index: int = 0)</span>
+<span>def <span class="ident">from_csv</span></span>(<span>fp: <class 'IO'> | str | pathlib.Path,<br>tz: zoneinfo.ZoneInfo | None = None,<br>time_index: int = 0)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Method for loading in a TimeSeries instance from a comma-separated value (csv) file</p>
@@ -268,6 +277,8 @@ class TimeSeries:
 The file-like object, path name, or Path in which to read</p>
 <p>time_index (int):
 The column index corresponding to the time column. Defaults to 0</p>
+<p>tz (ZoneInfo):
+The timezone to read the datetime data in</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code><a title="aqua_blue.time_series.TimeSeries" href="#aqua_blue.time_series.TimeSeries">TimeSeries</a></code></dt>
@@ -354,6 +365,8 @@ def timestep(self) -&gt; float:
             The delimiting character in the save file. Defaults to a comma
 
     &#34;&#34;&#34;
+    # This should work just fine as long as we are writing datetime objects in UTC.
+
     np.savetxt(
         fp,
         np.vstack((self.times, self.dependent_variable.T)).T,

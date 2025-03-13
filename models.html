@@ -65,19 +65,22 @@ class Model:
 
     reservoir: Reservoir
     &#34;&#34;&#34;reservoir defining input -&gt; reservoir mapping&#34;&#34;&#34;
-
+    
     readout: Readout
     &#34;&#34;&#34;readout defining reservoir -&gt; output mapping&#34;&#34;&#34;
-
+    
     final_time: float = field(init=False)
     &#34;&#34;&#34;final time read during training. will be set at training&#34;&#34;&#34;
 
     timestep: float = field(init=False)
     &#34;&#34;&#34;timestep read during training. will be set at training&#34;&#34;&#34;
-
+    
     initial_guess: np.typing.NDArray[np.floating] = field(init=False)
     &#34;&#34;&#34;initial guess read during training. will be set at training&#34;&#34;&#34;
 
+    tz: Union[datetime.tzinfo, None] = field(init=False)
+    &#34;&#34;&#34;timezone of the independent variable. Set to None if the DatetimeLikeArray is incompatible&#34;&#34;&#34;
+    
     def train(
         self,
         input_time_series: TimeSeries,
@@ -86,7 +89,7 @@ class Model:
     ):
         &#34;&#34;&#34;
         Training method for model
-
+        
         Args:
             input_time_series: TimeSeries instance to train on
             warmup: Number of initial steps to ignore in training
@@ -110,6 +113,8 @@ class Model:
         self.readout.coefficients = w_out_transpose.T
         self.timestep = input_time_series.timestep
         self.final_time = input_time_series.times[-1]
+        self.tz = input_time_series.times.tz
+        self.times_dtype = input_time_series.times.dtype
         self.initial_guess = time_series_array[-1, :]
     
     def predict(self, horizon: int) -&gt; TimeSeries:
@@ -133,9 +138,19 @@ class Model:
                 self.reservoir.update_reservoir(predictions[i-1, :])
             )
         
+        times_ = DatetimeLikeArray.from_array(
+        np.arange(
+            start=self.final_time + self.timestep,
+            stop=self.final_time + (horizon + 1) * self.timestep,
+            step=self.timestep,
+            dtype=self.times_dtype
+        ),
+        tz=self.tz, 
+        )
+        
         return TimeSeries(
             dependent_variable=predictions,
-            times=[self.final_time + step * self.timestep for step in range(1, horizon + 1)]
+            times=times_
         )</code></pre>
 </details>
 <div class="desc"><p>Model class for training and predicting</p></div>
@@ -160,6 +175,10 @@ class Model:
 <dt id="aqua_blue.models.Model.timestep"><code class="name">var <span class="ident">timestep</span> : float</code></dt>
 <dd>
 <div class="desc"><p>timestep read during training. will be set at training</p></div>
+</dd>
+<dt id="aqua_blue.models.Model.tz"><code class="name">var <span class="ident">tz</span> : datetime.tzinfo | None</code></dt>
+<dd>
+<div class="desc"><p>timezone of the independent variable. Set to None if the DatetimeLikeArray is incompatible</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -193,9 +212,19 @@ class Model:
             self.reservoir.update_reservoir(predictions[i-1, :])
         )
     
+    times_ = DatetimeLikeArray.from_array(
+    np.arange(
+        start=self.final_time + self.timestep,
+        stop=self.final_time + (horizon + 1) * self.timestep,
+        step=self.timestep,
+        dtype=self.times_dtype
+    ),
+    tz=self.tz, 
+    )
+    
     return TimeSeries(
         dependent_variable=predictions,
-        times=[self.final_time + step * self.timestep for step in range(1, horizon + 1)]
+        times=times_
     )</code></pre>
 </details>
 <div class="desc"><p>Model prediction method</p>
@@ -221,7 +250,7 @@ class Model:
 ):
     &#34;&#34;&#34;
     Training method for model
-
+    
     Args:
         input_time_series: TimeSeries instance to train on
         warmup: Number of initial steps to ignore in training
@@ -245,6 +274,8 @@ class Model:
     self.readout.coefficients = w_out_transpose.T
     self.timestep = input_time_series.timestep
     self.final_time = input_time_series.times[-1]
+    self.tz = input_time_series.times.tz
+    self.times_dtype = input_time_series.times.dtype
     self.initial_guess = time_series_array[-1, :]</code></pre>
 </details>
 <div class="desc"><p>Training method for model</p>
@@ -285,6 +316,7 @@ class Model:
 <li><code><a title="aqua_blue.models.Model.reservoir" href="#aqua_blue.models.Model.reservoir">reservoir</a></code></li>
 <li><code><a title="aqua_blue.models.Model.timestep" href="#aqua_blue.models.Model.timestep">timestep</a></code></li>
 <li><code><a title="aqua_blue.models.Model.train" href="#aqua_blue.models.Model.train">train</a></code></li>
+<li><code><a title="aqua_blue.models.Model.tz" href="#aqua_blue.models.Model.tz">tz</a></code></li>
 </ul>
 </li>
 </ul>
