@@ -48,7 +48,7 @@ el.replaceWith(d);
 <dl>
 <dt id="aqua_blue.datetimelikearray.DatetimeLikeArray"><code class="flex name class">
 <span>class <span class="ident">DatetimeLikeArray</span></span>
-<span>(</span><span>input_array: List[~DatetimeLike],<br>dtype,<br>buffer=None,<br>offset=0,<br>strides=None,<br>order=None)</span>
+<span>(</span><span>input_array: Sequence[~DatetimeLike],<br>dtype,<br>buffer=None,<br>offset=0,<br>strides=None,<br>order=None)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -75,7 +75,10 @@ el.replaceWith(d);
     Store the timezone offset information for the array. Default is None
     &#34;&#34;&#34;
 
-    def __new__(cls, input_array: List[DatetimeLike], dtype, buffer=None, offset=0, strides=None, order=None):
+    def __new__(cls, input_array: Sequence[DatetimeLike], dtype, buffer=None, offset=0, strides=None, order=None):
+
+        if isinstance(input_array[0], np.datetime64):
+            return input_array
        
         if not isinstance(input_array[0], datetime.datetime):
             # If you pass List[float] treat it like a normal NumPy array
