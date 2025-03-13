@@ -74,8 +74,7 @@ el.replaceWith(d);
     &#34;&#34;&#34; 
     Store the timezone offset information for the array. Default is None
     &#34;&#34;&#34;
-    
-    
+
     def __new__(cls, input_array: List[DatetimeLike], dtype, buffer=None, offset=0, strides=None, order=None):
        
         if not isinstance(input_array[0], datetime.datetime):
@@ -86,7 +85,8 @@ el.replaceWith(d);
             return obj
         
         # If you pass List[datetime.datetime], then create a timezone aware array of np.datetime64
-        # Store the timezone information of the first element - this means that all elements must belong to the same timezone.
+        # Store the timezone information of the first element
+        # This means that all elements must belong to the same timezone.
         tz_ = input_array[0].tzinfo if input_array[0].tzinfo else ZoneInfo(&#39;UTC&#39;) 
         
         for dt in input_array:
@@ -128,21 +128,14 @@ el.replaceWith(d);
 
         if self.tz and other.tz:
             # Due to .tzinfo being abstract, we compare the offsets rather than the timezone objects themselves
-            return bool(np.all(super().__eq__(other))) and datetime.datetime.now(self.tz).utcoffset() == datetime.datetime.now(other.tz).utcoffset()
+            tzs_equal = datetime.datetime.now(self.tz).utcoffset() == datetime.datetime.now(other.tz).utcoffset()
+            arrays_equal = bool(np.all(super().__eq__(other)))
+            return arrays_equal and tzs_equal
         
         if isinstance(other, np.ndarray):
             return bool(np.all(super().__eq__(other)))
         
-        else:
-            return False
-    
-    def astimezone(self, tz: datetime.tzinfo):
-        if not self.tz :
-            raise ValueError(f&#34;{self.__class__.__name__} of type {self.dtype} does not support timezones.&#34;)
-        
-        self.tz = tz
-        tz_offset_ = datetime.datetime.now(tz).utcoffset()
-        self.tz_offset = tz_offset_ if tz_offset_ else datetime.timedelta(0)
+        return False
     
     def to_list(self) -&gt; List[DatetimeLike]:
         &#34;&#34;&#34; 
@@ -163,14 +156,12 @@ el.replaceWith(d);
         else:
             offset_arr = arr + np_offset
         
-        list_arr = offset_arr.tolist() # mypy throws a type-checking error here
+        list_arr = offset_arr.tolist()
         converted_arr = [dt.replace(tzinfo=self.tz) for dt in list_arr]
         
         return converted_arr
 
-
-    
-    def to_file(self, fp: Union[IO, str, Path], tz: Union[datetime.tzinfo, None]=None):
+    def to_file(self, fp: Union[IO, str, Path], tz: Union[datetime.tzinfo, None] = None):
         &#34;&#34;&#34; 
         Save a DatetimeLikeArray instance to a text file
         
@@ -192,21 +183,24 @@ el.replaceWith(d);
         np_offset = np.timedelta64(int(np.abs(seconds_offset)), &#39;s&#39;)
         
         if seconds_offset &lt; 0:
-            offset_arr =  arr - np_offset 
+            offset_arr = arr - np_offset
         else:
             offset_arr = arr + np_offset 
         
-        offset_arr = offset_arr.tolist() # mypy throws a type-checking error here
+        offset_arr = offset_arr.tolist()
         replaced_arr = [dt.replace(tzinfo=None).isoformat() for dt in offset_arr]
         np.savetxt(fp, replaced_arr, fmt=&#39;%s&#39;)
     
     @staticmethod
-    def from_array(input_array: np.typing.NDArray[Union[np.number, np.datetime64]], tz: Union[datetime.tzinfo, None]=None): 
+    def from_array(
+        input_array: np.typing.NDArray[Union[np.number, np.datetime64]],
+        tz: Union[datetime.tzinfo, None] = None
+    ):
         &#34;&#34;&#34; 
         Convert a numpy array to a DatetimeLikeArray instance
         
         Args:
-            arr: numpy array to be converted
+            input_array: numpy array to be converted
             tz: timezone information that the original array is in
         &#34;&#34;&#34;
         array = input_array.tolist() 
@@ -217,12 +211,13 @@ el.replaceWith(d);
         return DatetimeLikeArray(input_array=array, dtype=input_array.dtype)
     
     @staticmethod
-    def from_fp(fp: Union[IO, str, Path], dtype,  tz: Union[datetime.tzinfo, None]=None):
+    def from_fp(fp: Union[IO, str, Path], dtype: Type, tz: Union[datetime.tzinfo, None] = None):
         &#34;&#34;&#34; 
         Load a text file and convert it to a DatetimeLikeArray instance
         
         Args:
             fp: The file-like object, path name, or Path in which to read
+            dtype: The datatype to read from the file
             tz: Timezone information that the original array is in
         &#34;&#34;&#34;
         if not tz:
@@ -266,12 +261,15 @@ requirements, not for timezone NumPy integration in general.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@staticmethod
-def from_array(input_array: np.typing.NDArray[Union[np.number, np.datetime64]], tz: Union[datetime.tzinfo, None]=None): 
+def from_array(
+    input_array: np.typing.NDArray[Union[np.number, np.datetime64]],
+    tz: Union[datetime.tzinfo, None] = None
+):
     &#34;&#34;&#34; 
     Convert a numpy array to a DatetimeLikeArray instance
     
     Args:
-        arr: numpy array to be converted
+        input_array: numpy array to be converted
         tz: timezone information that the original array is in
     &#34;&#34;&#34;
     array = input_array.tolist() 
@@ -284,14 +282,14 @@ def from_array(input_array: np.typing.NDArray[Union[np.number, np.datetime64]], 
 <div class="desc"><p>Convert a numpy array to a DatetimeLikeArray instance</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>arr</code></strong></dt>
+<dt><strong><code>input_array</code></strong></dt>
 <dd>numpy array to be converted</dd>
 <dt><strong><code>tz</code></strong></dt>
 <dd>timezone information that the original array is in</dd>
 </dl></div>
 </dd>
 <dt id="aqua_blue.datetimelikearray.DatetimeLikeArray.from_fp"><code class="name flex">
-<span>def <span class="ident">from_fp</span></span>(<span>fp: <class 'IO'> | str | pathlib.Path, dtype, tz: datetime.tzinfo | None = None)</span>
+<span>def <span class="ident">from_fp</span></span>(<span>fp: <class 'IO'> | str | pathlib.Path,<br>dtype: Type,<br>tz: datetime.tzinfo | None = None)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -299,12 +297,13 @@ def from_array(input_array: np.typing.NDArray[Union[np.number, np.datetime64]], 
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@staticmethod
-def from_fp(fp: Union[IO, str, Path], dtype,  tz: Union[datetime.tzinfo, None]=None):
+def from_fp(fp: Union[IO, str, Path], dtype: Type, tz: Union[datetime.tzinfo, None] = None):
     &#34;&#34;&#34; 
     Load a text file and convert it to a DatetimeLikeArray instance
     
     Args:
         fp: The file-like object, path name, or Path in which to read
+        dtype: The datatype to read from the file
         tz: Timezone information that the original array is in
     &#34;&#34;&#34;
     if not tz:
@@ -321,6 +320,8 @@ def from_fp(fp: Union[IO, str, Path], dtype,  tz: Union[datetime.tzinfo, None]=N
 <dl>
 <dt><strong><code>fp</code></strong></dt>
 <dd>The file-like object, path name, or Path in which to read</dd>
+<dt><strong><code>dtype</code></strong></dt>
+<dd>The datatype to read from the file</dd>
 <dt><strong><code>tz</code></strong></dt>
 <dd>Timezone information that the original array is in</dd>
 </dl></div>
@@ -328,24 +329,6 @@ def from_fp(fp: Union[IO, str, Path], dtype,  tz: Union[datetime.tzinfo, None]=N
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="aqua_blue.datetimelikearray.DatetimeLikeArray.astimezone"><code class="name flex">
-<span>def <span class="ident">astimezone</span></span>(<span>self, tz: datetime.tzinfo)</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def astimezone(self, tz: datetime.tzinfo):
-    if not self.tz :
-        raise ValueError(f&#34;{self.__class__.__name__} of type {self.dtype} does not support timezones.&#34;)
-    
-    self.tz = tz
-    tz_offset_ = datetime.datetime.now(tz).utcoffset()
-    self.tz_offset = tz_offset_ if tz_offset_ else datetime.timedelta(0)</code></pre>
-</details>
-<div class="desc"></div>
-</dd>
 <dt id="aqua_blue.datetimelikearray.DatetimeLikeArray.to_file"><code class="name flex">
 <span>def <span class="ident">to_file</span></span>(<span>self, fp: <class 'IO'> | str | pathlib.Path, tz: datetime.tzinfo | None = None)</span>
 </code></dt>
@@ -354,7 +337,7 @@ def from_fp(fp: Union[IO, str, Path], dtype,  tz: Union[datetime.tzinfo, None]=N
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def to_file(self, fp: Union[IO, str, Path], tz: Union[datetime.tzinfo, None]=None):
+<pre><code class="python">def to_file(self, fp: Union[IO, str, Path], tz: Union[datetime.tzinfo, None] = None):
     &#34;&#34;&#34; 
     Save a DatetimeLikeArray instance to a text file
     
@@ -376,11 +359,11 @@ def from_fp(fp: Union[IO, str, Path], dtype,  tz: Union[datetime.tzinfo, None]=N
     np_offset = np.timedelta64(int(np.abs(seconds_offset)), &#39;s&#39;)
     
     if seconds_offset &lt; 0:
-        offset_arr =  arr - np_offset 
+        offset_arr = arr - np_offset
     else:
         offset_arr = arr + np_offset 
     
-    offset_arr = offset_arr.tolist() # mypy throws a type-checking error here
+    offset_arr = offset_arr.tolist()
     replaced_arr = [dt.replace(tzinfo=None).isoformat() for dt in offset_arr]
     np.savetxt(fp, replaced_arr, fmt=&#39;%s&#39;)</code></pre>
 </details>
@@ -422,7 +405,7 @@ def from_fp(fp: Union[IO, str, Path], dtype,  tz: Union[datetime.tzinfo, None]=N
     else:
         offset_arr = arr + np_offset
     
-    list_arr = offset_arr.tolist() # mypy throws a type-checking error here
+    list_arr = offset_arr.tolist()
     converted_arr = [dt.replace(tzinfo=self.tz) for dt in list_arr]
     
     return converted_arr</code></pre>
@@ -449,7 +432,6 @@ def from_fp(fp: Union[IO, str, Path], dtype,  tz: Union[datetime.tzinfo, None]=N
 <li>
 <h4><code><a title="aqua_blue.datetimelikearray.DatetimeLikeArray" href="#aqua_blue.datetimelikearray.DatetimeLikeArray">DatetimeLikeArray</a></code></h4>
 <ul class="two-column">
-<li><code><a title="aqua_blue.datetimelikearray.DatetimeLikeArray.astimezone" href="#aqua_blue.datetimelikearray.DatetimeLikeArray.astimezone">astimezone</a></code></li>
 <li><code><a title="aqua_blue.datetimelikearray.DatetimeLikeArray.from_array" href="#aqua_blue.datetimelikearray.DatetimeLikeArray.from_array">from_array</a></code></li>
 <li><code><a title="aqua_blue.datetimelikearray.DatetimeLikeArray.from_fp" href="#aqua_blue.datetimelikearray.DatetimeLikeArray.from_fp">from_fp</a></code></li>
 <li><code><a title="aqua_blue.datetimelikearray.DatetimeLikeArray.to_file" href="#aqua_blue.datetimelikearray.DatetimeLikeArray.to_file">to_file</a></code></li>
