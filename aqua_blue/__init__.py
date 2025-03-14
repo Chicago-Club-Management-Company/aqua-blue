@@ -12,7 +12,7 @@ __author_emails__ = [
     "jacob.jeffries@ccmc.global",
     "ameen.mahmood@ccmc.global",
     "avik.thumati@ccmc.global",
-    "samuel.joseph@ccmc.global",
+    "samuel.josephs@ccmc.global",
     "hrishikesh.belagali@ccmc.global"
 ]
 __url__ = "https://github.com/Chicago-Club-Management-Company/aqua-blue"
