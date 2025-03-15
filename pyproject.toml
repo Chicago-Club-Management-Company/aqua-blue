@@ -8,7 +8,7 @@ dynamic = ["version"]
 description = "Lightweight and basic reservoir computing library"
 readme = "README.md"
 license = "MIT"
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 author = { name = "Jacob Jeffries", email = "jacob.jeffries@chicagoclubteam.org" }
 keywords = [
     "computing",
@@ -21,6 +21,7 @@ keywords = [
     "time",
 ]
 classifiers = [
+    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
