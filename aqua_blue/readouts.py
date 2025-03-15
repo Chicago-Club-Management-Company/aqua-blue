@@ -73,7 +73,8 @@ class LinearReadout(Readout):
             dependent_variables: Dependent (or response) data for training
         """
 
-        self.coefficients = np.linalg.pinv(independent_variables, rcond=self.rcond) @ dependent_variables
+        coeff = np.linalg.pinv(independent_variables, rcond=self.rcond) @ dependent_variables
+        self.coefficients = coeff.T
 
     def reservoir_to_output(self, reservoir_state: np.typing.NDArray[np.floating]) -> np.typing.NDArray[np.floating]:
 
