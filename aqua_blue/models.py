@@ -67,9 +67,8 @@ class Model:
         if warmup > 0:
             independent_variables = independent_variables[warmup:]
             dependent_variables = dependent_variables[warmup:]
-        
-        w_out_transpose = np.linalg.pinv(independent_variables, rcond=rcond) @ dependent_variables
-        self.readout.coefficients = w_out_transpose.T
+
+        self.readout.train(independent_variables, dependent_variables)
         self.timestep = input_time_series.timestep
         self.final_time = input_time_series.times[-1]
         self.tz = input_time_series.times.tz

@@ -19,6 +19,21 @@ class Readout(ABC):
     """coefficients defining the readout layer, which will later be fitted"""
 
     @abstractmethod
+    def train(
+        self,
+        independent_variables: np.typing.NDArray[np.floating],
+        dependent_variables: np.typing.NDArray[np.floating]
+    ):
+
+        """
+        Train readout layer, sets the coefficients attribute
+
+        Args:
+            independent_variables: Independent (or input) data for training
+            dependent_variables: Dependent (or response) data for training
+        """
+
+    @abstractmethod
     def reservoir_to_output(self, reservoir_state: np.typing.NDArray[np.floating]) -> np.typing.NDArray[np.floating]:
 
         """
@@ -37,6 +52,28 @@ class LinearReadout(Readout):
     """
     Linear readout layer, reservoir_state -> W @ reservoir_state
     """
+
+    rcond: float = 1.0e-10
+    """
+    condition number, or minimum singular value.
+    should be as small as possible while still preserving numerical stability
+    """
+
+    def train(
+        self,
+        independent_variables: np.typing.NDArray[np.floating],
+        dependent_variables: np.typing.NDArray[np.floating]
+    ):
+        r"""
+        Train linear layer, setting coefficients. Solves the following optimization problem
+        $W^* = \lim_{\lambda\to 0^+} argmin_W \| XW - Y\|_F^2 + \lambda \|W\|_F^2$
+
+        Args:
+            independent_variables: Independent (or input) data for training
+            dependent_variables: Dependent (or response) data for training
+        """
+
+        self.coefficients = np.linalg.pinv(independent_variables, rcond=self.rcond) @ dependent_variables
 
     def reservoir_to_output(self, reservoir_state: np.typing.NDArray[np.floating]) -> np.typing.NDArray[np.floating]:
 
