@@ -1,4 +1,4 @@
-__version__ = "0.1.5"
+__version__ = "0.2.0"
 __authors__ = [
     "Jacob Jeffries",
     "Ameen Mahmood",
@@ -9,11 +9,11 @@ __authors__ = [
 
 # need to change hrishi's email once there's a ccmc one for him
 __author_emails__ = [
-    "jacob.jeffries@chicagoclubteam.org",
-    "ameen.mahmood@chicagoclubteam.org",
-    "avik.thumati@chicagoclubteam.org",
-    "samuel.joseph@chicagoclubteam.org",
-    "hkbelagali@gmail.com"
+    "jacob.jeffries@ccmc.global",
+    "ameen.mahmood@ccmc.global",
+    "avik.thumati@ccmc.global",
+    "samuel.josephs@ccmc.global",
+    "hrishikesh.belagali@ccmc.global"
 ]
 __url__ = "https://github.com/Chicago-Club-Management-Company/aqua-blue"
 

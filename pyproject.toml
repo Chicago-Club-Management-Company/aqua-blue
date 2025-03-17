@@ -8,7 +8,7 @@ dynamic = ["version"]
 description = "Lightweight and basic reservoir computing library"
 readme = "README.md"
 license = "MIT"
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 author = { name = "Jacob Jeffries", email = "jacob.jeffries@chicagoclubteam.org" }
 keywords = [
     "computing",
@@ -21,12 +21,14 @@ keywords = [
     "time",
 ]
 classifiers = [
+    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
     "numpy ~= 2.0.2",
+    "tzdata~=2025.1",
 ]
 
 [project.urls]
@@ -38,7 +40,7 @@ dev = [
     "pytest~=8.0.2",
     "ruff~=0.9.4",
     "mypy~=1.13.0",
-    "pdoc3~=0.11.5"
+    "pdoc3~=0.11.5",
 ]
 examples = [
     "scipy~=1.13.1", 

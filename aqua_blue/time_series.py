@@ -1,105 +1,68 @@
 """
-Module defining the TimeSeries class for handling and processing time series data.
-
-This module provides:
-- `TimeSeries`: A class representing a time series with dependent variables and corresponding timestamps.
-- Methods for saving, loading, and manipulating time series data.
+Module defining the TimeSeries object
 """
 
 from typing import IO, Union, List
 from pathlib import Path
 import warnings
 from itertools import pairwise
-from datetime import datetime
 
 from dataclasses import dataclass
 import numpy as np
 
 
-
 class ShapeChangedWarning(Warning):
+
     """
-    Warning raised when the shape of `dependent_variable` is modified
-    in `TimeSeries.__post_init__` to conform to expected dimensions.
+    warn the user that TimeSeries.__post_init__ changed the shape of the dependent variable
     """
 
 
 @dataclass
 class TimeSeries:
+
     """
-    A class representing a time series.
-
-    A `TimeSeries` object consists of:
-    - `dependent_variable`: The observed values at each timestep.
-    - `times`: The corresponding timestamps for each observation.
-
-    Attributes:
-        dependent_variable (np.typing.NDArray[np.floating]):
-            A NumPy array containing the observed values of the time series.
-            It should have shape `(num_steps, num_dimensions)`.
-        times (List[float] or List[datetime]):
-            A list of timestamps corresponding to each observation.
-
-    Raises:
-        ValueError: If timestamps are not uniformly spaced or if the timestep is zero.
+    TimeSeries class defining a time series
     """
 
     dependent_variable: np.typing.NDArray[np.floating]
-    """Array of observed values in the time series, stored in shape `(num_steps, num_dimensions)`."""
-
-    times: List[Union[float, datetime]]
-    """List of timestamps corresponding to each data point in `dependent_variable`."""
+    times: List[float]
 
     def __post_init__(self):
-        """
-        Validates and preprocesses the time series data after initialization.
 
-        - Ensures that timestamps are stored as a list.
-        - Converts `times` to numerical format if they are `datetime` objects.
-        - Checks for uniform time spacing.
-        - Ensures `dependent_variable` has the correct shape `(num_steps, num_dimensions)`.
-        """
-        # Ensure times is a list (if it's a numpy array, convert it)
         if isinstance(self.times, np.ndarray):
             self.times = self.times.tolist()
 
-        # Compute the differences between consecutive timestamps
         timesteps = [t2 - t1 for t1, t2 in pairwise(self.times)]
 
-        # Convert datetime.timedelta to numeric values (days)
-        if isinstance(self.times[0], datetime):
-            numeric_timesteps = [t.total_seconds() / (3600 * 24) for t in timesteps]
-        else:
-            numeric_timesteps = timesteps
-
-        # Validate uniform time spacing
-        if not np.isclose(np.std(numeric_timesteps), 0.0):
+        if not np.isclose(np.std(timesteps), 0.0):
             raise ValueError("TimeSeries.times must be uniformly spaced")
-        if np.isclose(np.mean(numeric_timesteps), 0.0):
+        if np.isclose(np.mean(timesteps), 0.0):
             raise ValueError("TimeSeries.times must have a timestep greater than zero")
 
-        # Ensure `dependent_variable` is 2D
         if len(self.dependent_variable.shape) == 1:
             num_steps = len(self.dependent_variable)
             self.dependent_variable = self.dependent_variable.reshape(num_steps, 1)
             warnings.warn(
-                f"TimeSeries.dependent_variable should have shape (num_steps, num_dimensions). "
-                f"The shape has been changed from {(num_steps,)} to {self.dependent_variable.shape}",
-                ShapeChangedWarning
+                f"TimeSeries.dependent_variable should have shape (number of steps, dimensionality). "
+                f"The shape has been changed from {(num_steps,)} to {self.dependent_variable.shape}"
             )
 
-    def save(self, fp: Union[IO, str, Path], header: str = "", delimiter: str = ","):
+    def save(self, fp: Union[IO, str, Path], header: str = "", delimiter=","):
+
         """
-        Saves the time series data to a CSV file.
+        Method to save a time series
 
         Args:
-            fp (Union[IO, str, Path]): The file path or file object to save the data.
-            header (str, optional): An optional header line. Defaults to an empty string.
-            delimiter (str, optional): The character used to separate values. Defaults to a comma.
+            fp (Union[IO, str, Path]):
+                The file-like object, path name, or Path in which to save the TimeSeries instance
 
-        The saved file contains:
-        - The first column: timestamps (`times`)
-        - The following columns: values from `dependent_variable`
+            header (str):
+                An optional header. Defaults to the empty string
+
+            delimiter (str):
+                The delimiting character in the save file. Defaults to a comma
+
         """
         np.savetxt(
             fp,
@@ -109,18 +72,35 @@ class TimeSeries:
             comments=""
         )
 
-    @classmethod
-    def from_csv(cls, fp: Union[IO, str, Path], time_index: int = 0):
-        """
-        Loads a `TimeSeries` instance from a CSV file.
+    @property
+    def num_dims(self) -> int:
 
-        Args:
-            fp (Union[IO, str, Path]): The file path or file object to read from.
-            time_index (int, optional): The index of the column representing time. Defaults to 0.
+        """
+        The dimensionality of the time series
 
         Returns:
-            TimeSeries: A `TimeSeries` object populated with the CSV data.
+            int: The dimensionality of the time series
         """
+
+        return self.dependent_variable.shape[1]
+
+    @classmethod
+    def from_csv(cls, fp: Union[IO, str, Path], time_index: int = 0):
+
+        """
+        Method for loading in a TimeSeries instance from a comma-separated value (csv) file
+
+        Args:
+            fp (Union[IO, str, Path]):
+                The file-like object, path name, or Path in which to read
+
+            time_index (int):
+                The column index corresponding to the time column. Defaults to 0
+
+        Returns:
+            TimeSeries: A TimeSeries instance populated by data from the csv file
+        """
+
         data = np.loadtxt(fp, delimiter=",")
         times = data[:, time_index].tolist()
 
@@ -131,64 +111,27 @@ class TimeSeries:
 
     @property
     def timestep(self) -> float:
+
         """
-        Returns the time interval (timestep) between consecutive observations.
+        The physical timestep of the time series
 
         Returns:
-            float: The timestep between observations.
-
-        Raises:
-            IndexError: If `times` is empty or has fewer than two elements.
+            int: The physical timestep of the time series
         """
-        if len(self.times) < 2:
-            raise IndexError("Cannot compute timestep with fewer than two time points.")
+
         return self.times[1] - self.times[0]
 
-    @property
-    def num_dims(self) -> int:
-        """
-        Returns the dimensionality of the time series.
-
-        Returns:
-            int: The number of dimensions in `dependent_variable`.
-        """
-        return self.dependent_variable.shape[1]
-
     def __eq__(self, other) -> bool:
-        """
-        Checks if two `TimeSeries` instances are equal.
-
-        Returns:
-            bool: `True` if both time series have identical timestamps and values.
-        """
-        return all(t1 == t2 for t1, t2 in zip(self.times, other.times)) and np.allclose(
-            self.dependent_variable, other.dependent_variable
-        )
+        return all(t1 == t2 for t1, t2 in zip(self.times, other.times)) and bool(np.all(
+            np.isclose(self.dependent_variable, other.dependent_variable)
+        ))
 
     def __getitem__(self, key):
-        """
-        Retrieves a subset of the `TimeSeries`.
 
-        Args:
-            key (int or slice): The index or range of elements to retrieve.
-
-        Returns:
-            TimeSeries: A new `TimeSeries` containing the selected data.
-        """
         return TimeSeries(self.dependent_variable[key], self.times[key])
 
     def __setitem__(self, key, value):
-        """
-        Sets values for a subset of the `TimeSeries`.
 
-        Args:
-            key (int or slice): The index or range of elements to modify.
-            value (TimeSeries): A `TimeSeries` instance containing the new data.
-
-        Raises:
-            TypeError: If `value` is not a `TimeSeries` instance.
-            ValueError: If the index is out of range.
-        """
         if not isinstance(value, TimeSeries):
             raise TypeError("Value must be a TimeSeries object")
         if isinstance(key, slice) and key.stop > len(self.dependent_variable):
@@ -200,19 +143,12 @@ class TimeSeries:
         self.times[key] = value.times
 
     def __add__(self, other):
-        """
-        Adds two `TimeSeries` instances element-wise.
 
-        Returns:
-            TimeSeries: The result of element-wise addition.
+        if not len(self.times) == len(other.times):
+            raise ValueError("can only add TimeSeries instances that have the same number of timesteps")
 
-        Raises:
-            ValueError: If the two time series do not have the same length or timestamps.
-        """
-        if len(self.times) != len(other.times):
-            raise ValueError("Cannot add TimeSeries instances with different lengths.")
         if not np.all(self.times == other.times):
-            raise ValueError("Cannot add TimeSeries instances with different timestamps.")
+            raise ValueError("can only add TimeSeries instances that span the same times")
 
         return TimeSeries(
             dependent_variable=self.dependent_variable + other.dependent_variable,
@@ -220,22 +156,29 @@ class TimeSeries:
         )
 
     def __sub__(self, other):
-        """
-        Subtracts one `TimeSeries` instance from another.
 
-        Returns:
-            TimeSeries: The result of element-wise subtraction.
+        if not len(self.times) == len(other.times):
+            raise ValueError("can only subtract TimeSeries instances that have the same number of timesteps")
 
-        Raises:
-            ValueError: If the two time series do not have the same length or timestamps.
-        """
-        return self + (-1 * other)
+        if not np.all(self.times == other.times):
+            raise ValueError("can only subtract TimeSeries instances that span the same times")
+
+        return TimeSeries(
+            dependent_variable=self.dependent_variable - other.dependent_variable,
+            times=self.times
+        )
+
+    def __rshift__(self, other):
+
+        if self.times[-1] >= other.times[0]:
+            print(self.times[-1], other.times[0])
+            raise ValueError("can only concatenate TimeSeries instances with non-overlapping time values")
+
+        return TimeSeries(
+            dependent_variable=np.vstack((self.dependent_variable, other.dependent_variable)),
+            times=self.times + other.times
+        )
 
     def __len__(self):
-        """
-        Returns the number of timesteps in the time series.
 
-        Returns:
-            int: The length of `times` (number of observations).
-        """
         return len(self.times)

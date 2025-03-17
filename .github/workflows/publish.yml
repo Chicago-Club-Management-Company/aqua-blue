@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
     permissions:
       contents: read
     
@@ -39,19 +39,13 @@ jobs:
       - name: Type check with mypy (dev)
         run: >-
           mypy aqua_blue/
-      - name: Lint with ruff (examples)
-        run: >- 
-          ruff check examples/
-      - name: Type check with mypy (examples)
-        run: >-
-          mypy examples/
   
   quickstart:
     name: run quickstart
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
     permissions:
       contents: read
 
@@ -73,10 +67,35 @@ jobs:
         run: >-
           python _quickstart.py
 
+  examples:
+    name: run examples
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Set up examples environment
+        run: >-
+          pip install .[examples]
+      - name: Run example scripts
+        run: >-
+          for file in examples/*.py; do python "$file"; done
+
   build:
     needs:
       - prebuild
       - quickstart
+      - examples
     name: build distribution
     runs-on: ubuntu-latest
     permissions:
@@ -156,7 +175,7 @@ jobs:
   pypi-publish:
     needs:
       - build
-      - create-docs
+      - deploy-docs
     name: upload release to PyPI
     runs-on: ubuntu-latest
 
