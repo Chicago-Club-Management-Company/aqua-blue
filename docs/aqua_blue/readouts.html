@@ -67,122 +67,115 @@
                     <h1 class="modulename">
 <a href="./../aqua_blue.html">aqua_blue</a><wbr>.readouts    </h1>
 
-                        <div class="docstring"><p>Module defining readout layers for mapping reservoir states to output values.</p>
+                        <div class="docstring"><p>Module defining readout layers for reservoir computing models.</p>
 
-<p>This module provides an abstract base class <code><a href="#Readout">Readout</a></code> for defining readout layers,
-as well as a concrete implementation <code><a href="#LinearReadout">LinearReadout</a></code> for performing linear mappings
-from reservoir states to output states.</p>
+<p>This module provides an abstract <code><a href="#Readout">Readout</a></code> class and a concrete <code><a href="#LinearReadout">LinearReadout</a></code> class,
+which map reservoir states to output states. The readout layer acts as a simple trainable
+mapping that converts high-dimensional reservoir states into predictions.</p>
 
-<p>Readouts are an essential part of Echo State Networks (ESNs) and other reservoir computing
-models, where they process the high-dimensional reservoir state and produce the final predictions.</p>
+<p>Typically, readout layers are trained using ridge regression or similar optimization techniques
+to minimize errors between predicted and actual outputs.</p>
 </div>
 
                         <input id="mod-readouts-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 
                         <label class="view-source-button" for="mod-readouts-view-source"><span>View Source</span></label>
 
-                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos">  1</span></a><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-2"><a href="#L-2"><span class="linenos">  2</span></a><span class="sd">Module defining readout layers for mapping reservoir states to output values.</span>
-</span><span id="L-3"><a href="#L-3"><span class="linenos">  3</span></a>
-</span><span id="L-4"><a href="#L-4"><span class="linenos">  4</span></a><span class="sd">This module provides an abstract base class `Readout` for defining readout layers,</span>
-</span><span id="L-5"><a href="#L-5"><span class="linenos">  5</span></a><span class="sd">as well as a concrete implementation `LinearReadout` for performing linear mappings</span>
-</span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a><span class="sd">from reservoir states to output states.</span>
-</span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a>
-</span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a><span class="sd">Readouts are an essential part of Echo State Networks (ESNs) and other reservoir computing</span>
-</span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a><span class="sd">models, where they process the high-dimensional reservoir state and produce the final predictions.</span>
-</span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a>
-</span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
-</span><span id="L-13"><a href="#L-13"><span class="linenos"> 13</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
-</span><span id="L-14"><a href="#L-14"><span class="linenos"> 14</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-</span><span id="L-15"><a href="#L-15"><span class="linenos"> 15</span></a>
-</span><span id="L-16"><a href="#L-16"><span class="linenos"> 16</span></a>
-</span><span id="L-17"><a href="#L-17"><span class="linenos"> 17</span></a><span class="nd">@dataclass</span>
-</span><span id="L-18"><a href="#L-18"><span class="linenos"> 18</span></a><span class="k">class</span><span class="w"> </span><span class="nc">Readout</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-</span><span id="L-19"><a href="#L-19"><span class="linenos"> 19</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-20"><a href="#L-20"><span class="linenos"> 20</span></a><span class="sd">    Abstract base class for a readout layer in a reservoir computing model.</span>
-</span><span id="L-21"><a href="#L-21"><span class="linenos"> 21</span></a>
-</span><span id="L-22"><a href="#L-22"><span class="linenos"> 22</span></a><span class="sd">    The readout layer is responsible for mapping the high-dimensional</span>
-</span><span id="L-23"><a href="#L-23"><span class="linenos"> 23</span></a><span class="sd">    reservoir state to the desired output space. Different implementations</span>
-</span><span id="L-24"><a href="#L-24"><span class="linenos"> 24</span></a><span class="sd">    of this class can define different mapping strategies (e.g., linear, nonlinear).</span>
-</span><span id="L-25"><a href="#L-25"><span class="linenos"> 25</span></a>
-</span><span id="L-26"><a href="#L-26"><span class="linenos"> 26</span></a><span class="sd">    Attributes:</span>
-</span><span id="L-27"><a href="#L-27"><span class="linenos"> 27</span></a><span class="sd">        coefficients (np.typing.NDArray[np.floating]):</span>
-</span><span id="L-28"><a href="#L-28"><span class="linenos"> 28</span></a><span class="sd">            The transformation matrix (or coefficients) that defines the mapping</span>
-</span><span id="L-29"><a href="#L-29"><span class="linenos"> 29</span></a><span class="sd">            from reservoir states to output states. These coefficients are learned</span>
-</span><span id="L-30"><a href="#L-30"><span class="linenos"> 30</span></a><span class="sd">            during training.</span>
-</span><span id="L-31"><a href="#L-31"><span class="linenos"> 31</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="L-32"><a href="#L-32"><span class="linenos"> 32</span></a>
-</span><span id="L-33"><a href="#L-33"><span class="linenos"> 33</span></a>    <span class="n">coefficients</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">typing</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</span><span id="L-34"><a href="#L-34"><span class="linenos"> 34</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Transformation matrix (learned during training) that maps reservoir states to output values.&quot;&quot;&quot;</span>
-</span><span id="L-35"><a href="#L-35"><span class="linenos"> 35</span></a>
-</span><span id="L-36"><a href="#L-36"><span class="linenos"> 36</span></a>    <span class="nd">@abstractmethod</span>
-</span><span id="L-37"><a href="#L-37"><span class="linenos"> 37</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">reservoir_to_output</span><span class="p">(</span>
-</span><span id="L-38"><a href="#L-38"><span class="linenos"> 38</span></a>        <span class="bp">self</span><span class="p">,</span> <span class="n">reservoir_state</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">typing</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]</span>
-</span><span id="L-39"><a href="#L-39"><span class="linenos"> 39</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">typing</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
-</span><span id="L-40"><a href="#L-40"><span class="linenos"> 40</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-41"><a href="#L-41"><span class="linenos"> 41</span></a><span class="sd">        Maps a given reservoir state to an output value.</span>
-</span><span id="L-42"><a href="#L-42"><span class="linenos"> 42</span></a>
-</span><span id="L-43"><a href="#L-43"><span class="linenos"> 43</span></a><span class="sd">        This method is abstract and must be implemented by subclasses.</span>
-</span><span id="L-44"><a href="#L-44"><span class="linenos"> 44</span></a>
-</span><span id="L-45"><a href="#L-45"><span class="linenos"> 45</span></a><span class="sd">        Args:</span>
-</span><span id="L-46"><a href="#L-46"><span class="linenos"> 46</span></a><span class="sd">            reservoir_state (np.typing.NDArray[np.floating]):</span>
-</span><span id="L-47"><a href="#L-47"><span class="linenos"> 47</span></a><span class="sd">                The current reservoir state to be transformed into an output.</span>
-</span><span id="L-48"><a href="#L-48"><span class="linenos"> 48</span></a>
-</span><span id="L-49"><a href="#L-49"><span class="linenos"> 49</span></a><span class="sd">        Returns:</span>
-</span><span id="L-50"><a href="#L-50"><span class="linenos"> 50</span></a><span class="sd">            np.typing.NDArray[np.floating]: The computed output value(s).</span>
-</span><span id="L-51"><a href="#L-51"><span class="linenos"> 51</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="L-52"><a href="#L-52"><span class="linenos"> 52</span></a>        <span class="k">pass</span>
-</span><span id="L-53"><a href="#L-53"><span class="linenos"> 53</span></a>
-</span><span id="L-54"><a href="#L-54"><span class="linenos"> 54</span></a>
-</span><span id="L-55"><a href="#L-55"><span class="linenos"> 55</span></a><span class="nd">@dataclass</span>
-</span><span id="L-56"><a href="#L-56"><span class="linenos"> 56</span></a><span class="k">class</span><span class="w"> </span><span class="nc">LinearReadout</span><span class="p">(</span><span class="n">Readout</span><span class="p">):</span>
-</span><span id="L-57"><a href="#L-57"><span class="linenos"> 57</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-58"><a href="#L-58"><span class="linenos"> 58</span></a><span class="sd">    A linear readout layer that applies a weighted transformation to the reservoir state.</span>
-</span><span id="L-59"><a href="#L-59"><span class="linenos"> 59</span></a>
-</span><span id="L-60"><a href="#L-60"><span class="linenos"> 60</span></a><span class="sd">    This class implements a simple linear mapping from the reservoir state</span>
-</span><span id="L-61"><a href="#L-61"><span class="linenos"> 61</span></a><span class="sd">    to the output state using matrix multiplication. It follows the equation:</span>
-</span><span id="L-62"><a href="#L-62"><span class="linenos"> 62</span></a>
-</span><span id="L-63"><a href="#L-63"><span class="linenos"> 63</span></a><span class="sd">        output = coefficients @ reservoir_state</span>
-</span><span id="L-64"><a href="#L-64"><span class="linenos"> 64</span></a>
-</span><span id="L-65"><a href="#L-65"><span class="linenos"> 65</span></a><span class="sd">    This is equivalent to applying a linear regression model to the reservoir outputs.</span>
-</span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a>
-</span><span id="L-67"><a href="#L-67"><span class="linenos"> 67</span></a><span class="sd">    Example:</span>
-</span><span id="L-68"><a href="#L-68"><span class="linenos"> 68</span></a><span class="sd">        ```python</span>
-</span><span id="L-69"><a href="#L-69"><span class="linenos"> 69</span></a><span class="sd">        readout = LinearReadout()</span>
-</span><span id="L-70"><a href="#L-70"><span class="linenos"> 70</span></a><span class="sd">        readout.coefficients = np.random.rand(1, 100)  # Example shape</span>
-</span><span id="L-71"><a href="#L-71"><span class="linenos"> 71</span></a><span class="sd">        output = readout.reservoir_to_output(reservoir_state)</span>
-</span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a><span class="sd">        ```</span>
-</span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a>
-</span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a><span class="sd">    Raises:</span>
-</span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a><span class="sd">        ValueError: If the readout layer is used before being trained (i.e.,</span>
-</span><span id="L-76"><a href="#L-76"><span class="linenos"> 76</span></a><span class="sd">        if `self.coefficients` is not set).</span>
-</span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="L-78"><a href="#L-78"><span class="linenos"> 78</span></a>
-</span><span id="L-79"><a href="#L-79"><span class="linenos"> 79</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">reservoir_to_output</span><span class="p">(</span>
-</span><span id="L-80"><a href="#L-80"><span class="linenos"> 80</span></a>        <span class="bp">self</span><span class="p">,</span> <span class="n">reservoir_state</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">typing</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]</span>
-</span><span id="L-81"><a href="#L-81"><span class="linenos"> 81</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">typing</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
-</span><span id="L-82"><a href="#L-82"><span class="linenos"> 82</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-83"><a href="#L-83"><span class="linenos"> 83</span></a><span class="sd">        Computes the output by applying a linear transformation to the reservoir state.</span>
-</span><span id="L-84"><a href="#L-84"><span class="linenos"> 84</span></a>
-</span><span id="L-85"><a href="#L-85"><span class="linenos"> 85</span></a><span class="sd">        This method multiplies the learned coefficients with the given</span>
-</span><span id="L-86"><a href="#L-86"><span class="linenos"> 86</span></a><span class="sd">        reservoir state to produce the output.</span>
-</span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a>
-</span><span id="L-88"><a href="#L-88"><span class="linenos"> 88</span></a><span class="sd">        Args:</span>
-</span><span id="L-89"><a href="#L-89"><span class="linenos"> 89</span></a><span class="sd">            reservoir_state (np.typing.NDArray[np.floating]):</span>
-</span><span id="L-90"><a href="#L-90"><span class="linenos"> 90</span></a><span class="sd">                The current state of the reservoir.</span>
-</span><span id="L-91"><a href="#L-91"><span class="linenos"> 91</span></a>
-</span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a><span class="sd">        Returns:</span>
-</span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a><span class="sd">            np.typing.NDArray[np.floating]: The predicted output.</span>
-</span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a>
-</span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a><span class="sd">        Raises:</span>
-</span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a><span class="sd">            ValueError: If `coefficients` have not been set (i.e., the model has not been trained).</span>
-</span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a>
-</span><span id="L-99"><a href="#L-99"><span class="linenos"> 99</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;coefficients&quot;</span><span class="p">):</span>
-</span><span id="L-100"><a href="#L-100"><span class="linenos">100</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Readout layer must be trained before use. Call the train method first.&quot;</span><span class="p">)</span>
-</span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a>
-</span><span id="L-102"><a href="#L-102"><span class="linenos">102</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span> <span class="o">@</span> <span class="n">reservoir_state</span>
+                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos"> 1</span></a><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-2"><a href="#L-2"><span class="linenos"> 2</span></a><span class="sd">Module defining readout layers for reservoir computing models.</span>
+</span><span id="L-3"><a href="#L-3"><span class="linenos"> 3</span></a>
+</span><span id="L-4"><a href="#L-4"><span class="linenos"> 4</span></a><span class="sd">This module provides an abstract `Readout` class and a concrete `LinearReadout` class,</span>
+</span><span id="L-5"><a href="#L-5"><span class="linenos"> 5</span></a><span class="sd">which map reservoir states to output states. The readout layer acts as a simple trainable</span>
+</span><span id="L-6"><a href="#L-6"><span class="linenos"> 6</span></a><span class="sd">mapping that converts high-dimensional reservoir states into predictions.</span>
+</span><span id="L-7"><a href="#L-7"><span class="linenos"> 7</span></a>
+</span><span id="L-8"><a href="#L-8"><span class="linenos"> 8</span></a><span class="sd">Typically, readout layers are trained using ridge regression or similar optimization techniques</span>
+</span><span id="L-9"><a href="#L-9"><span class="linenos"> 9</span></a><span class="sd">to minimize errors between predicted and actual outputs.</span>
+</span><span id="L-10"><a href="#L-10"><span class="linenos">10</span></a><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-11"><a href="#L-11"><span class="linenos">11</span></a>
+</span><span id="L-12"><a href="#L-12"><span class="linenos">12</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+</span><span id="L-13"><a href="#L-13"><span class="linenos">13</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+</span><span id="L-14"><a href="#L-14"><span class="linenos">14</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span id="L-15"><a href="#L-15"><span class="linenos">15</span></a>
+</span><span id="L-16"><a href="#L-16"><span class="linenos">16</span></a>
+</span><span id="L-17"><a href="#L-17"><span class="linenos">17</span></a><span class="nd">@dataclass</span>
+</span><span id="L-18"><a href="#L-18"><span class="linenos">18</span></a><span class="k">class</span><span class="w"> </span><span class="nc">Readout</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+</span><span id="L-19"><a href="#L-19"><span class="linenos">19</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-20"><a href="#L-20"><span class="linenos">20</span></a><span class="sd">    Abstract base class for readout layers, defining how reservoir states map to outputs.</span>
+</span><span id="L-21"><a href="#L-21"><span class="linenos">21</span></a>
+</span><span id="L-22"><a href="#L-22"><span class="linenos">22</span></a><span class="sd">    A readout layer processes the high-dimensional reservoir state and transforms it into</span>
+</span><span id="L-23"><a href="#L-23"><span class="linenos">23</span></a><span class="sd">    meaningful outputs. This abstract class defines a common interface for different types of</span>
+</span><span id="L-24"><a href="#L-24"><span class="linenos">24</span></a><span class="sd">    readout layers.</span>
+</span><span id="L-25"><a href="#L-25"><span class="linenos">25</span></a>
+</span><span id="L-26"><a href="#L-26"><span class="linenos">26</span></a><span class="sd">    Attributes:</span>
+</span><span id="L-27"><a href="#L-27"><span class="linenos">27</span></a><span class="sd">        coefficients (np.typing.NDArray[np.floating]):</span>
+</span><span id="L-28"><a href="#L-28"><span class="linenos">28</span></a><span class="sd">            The trained weight matrix defining the readout transformation.</span>
+</span><span id="L-29"><a href="#L-29"><span class="linenos">29</span></a><span class="sd">            This is set during training and used for making predictions.</span>
+</span><span id="L-30"><a href="#L-30"><span class="linenos">30</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-31"><a href="#L-31"><span class="linenos">31</span></a>
+</span><span id="L-32"><a href="#L-32"><span class="linenos">32</span></a>    <span class="n">coefficients</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">typing</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span id="L-33"><a href="#L-33"><span class="linenos">33</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;The trained weight matrix defining the readout transformation. Set during training.&quot;&quot;&quot;</span>
+</span><span id="L-34"><a href="#L-34"><span class="linenos">34</span></a>
+</span><span id="L-35"><a href="#L-35"><span class="linenos">35</span></a>    <span class="nd">@abstractmethod</span>
+</span><span id="L-36"><a href="#L-36"><span class="linenos">36</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">reservoir_to_output</span><span class="p">(</span>
+</span><span id="L-37"><a href="#L-37"><span class="linenos">37</span></a>        <span class="bp">self</span><span class="p">,</span> <span class="n">reservoir_state</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">typing</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]</span>
+</span><span id="L-38"><a href="#L-38"><span class="linenos">38</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">typing</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
+</span><span id="L-39"><a href="#L-39"><span class="linenos">39</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-40"><a href="#L-40"><span class="linenos">40</span></a><span class="sd">        Convert a reservoir state into an output value.</span>
+</span><span id="L-41"><a href="#L-41"><span class="linenos">41</span></a>
+</span><span id="L-42"><a href="#L-42"><span class="linenos">42</span></a><span class="sd">        This method is implemented in subclasses to define the specific mapping</span>
+</span><span id="L-43"><a href="#L-43"><span class="linenos">43</span></a><span class="sd">        from reservoir states to outputs.</span>
+</span><span id="L-44"><a href="#L-44"><span class="linenos">44</span></a>
+</span><span id="L-45"><a href="#L-45"><span class="linenos">45</span></a><span class="sd">        Args:</span>
+</span><span id="L-46"><a href="#L-46"><span class="linenos">46</span></a><span class="sd">            reservoir_state (np.typing.NDArray[np.floating]):</span>
+</span><span id="L-47"><a href="#L-47"><span class="linenos">47</span></a><span class="sd">                The reservoir state vector to be mapped to an output.</span>
+</span><span id="L-48"><a href="#L-48"><span class="linenos">48</span></a>
+</span><span id="L-49"><a href="#L-49"><span class="linenos">49</span></a><span class="sd">        Returns:</span>
+</span><span id="L-50"><a href="#L-50"><span class="linenos">50</span></a><span class="sd">            np.typing.NDArray[np.floating]: The corresponding output value(s).</span>
+</span><span id="L-51"><a href="#L-51"><span class="linenos">51</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-52"><a href="#L-52"><span class="linenos">52</span></a>        <span class="k">pass</span>
+</span><span id="L-53"><a href="#L-53"><span class="linenos">53</span></a>
+</span><span id="L-54"><a href="#L-54"><span class="linenos">54</span></a>
+</span><span id="L-55"><a href="#L-55"><span class="linenos">55</span></a><span class="nd">@dataclass</span>
+</span><span id="L-56"><a href="#L-56"><span class="linenos">56</span></a><span class="k">class</span><span class="w"> </span><span class="nc">LinearReadout</span><span class="p">(</span><span class="n">Readout</span><span class="p">):</span>
+</span><span id="L-57"><a href="#L-57"><span class="linenos">57</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-58"><a href="#L-58"><span class="linenos">58</span></a><span class="sd">    Linear readout layer implementing a simple weighted transformation.</span>
+</span><span id="L-59"><a href="#L-59"><span class="linenos">59</span></a>
+</span><span id="L-60"><a href="#L-60"><span class="linenos">60</span></a><span class="sd">    This readout layer applies a linear transformation using a trained weight matrix</span>
+</span><span id="L-61"><a href="#L-61"><span class="linenos">61</span></a><span class="sd">    to convert reservoir states into output values. The transformation follows the form:</span>
+</span><span id="L-62"><a href="#L-62"><span class="linenos">62</span></a>
+</span><span id="L-63"><a href="#L-63"><span class="linenos">63</span></a><span class="sd">        output = W @ reservoir_state</span>
+</span><span id="L-64"><a href="#L-64"><span class="linenos">64</span></a>
+</span><span id="L-65"><a href="#L-65"><span class="linenos">65</span></a><span class="sd">    where `W` is the coefficient matrix learned during training.</span>
+</span><span id="L-66"><a href="#L-66"><span class="linenos">66</span></a>
+</span><span id="L-67"><a href="#L-67"><span class="linenos">67</span></a><span class="sd">    Raises:</span>
+</span><span id="L-68"><a href="#L-68"><span class="linenos">68</span></a><span class="sd">        ValueError: If the readout layer is used before training (i.e., before `coefficients` is set).</span>
+</span><span id="L-69"><a href="#L-69"><span class="linenos">69</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-70"><a href="#L-70"><span class="linenos">70</span></a>
+</span><span id="L-71"><a href="#L-71"><span class="linenos">71</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">reservoir_to_output</span><span class="p">(</span>
+</span><span id="L-72"><a href="#L-72"><span class="linenos">72</span></a>        <span class="bp">self</span><span class="p">,</span> <span class="n">reservoir_state</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">typing</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]</span>
+</span><span id="L-73"><a href="#L-73"><span class="linenos">73</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">typing</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
+</span><span id="L-74"><a href="#L-74"><span class="linenos">74</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-75"><a href="#L-75"><span class="linenos">75</span></a><span class="sd">        Apply a linear transformation to map the reservoir state to an output.</span>
+</span><span id="L-76"><a href="#L-76"><span class="linenos">76</span></a>
+</span><span id="L-77"><a href="#L-77"><span class="linenos">77</span></a><span class="sd">        This function performs a simple matrix multiplication:</span>
+</span><span id="L-78"><a href="#L-78"><span class="linenos">78</span></a>
+</span><span id="L-79"><a href="#L-79"><span class="linenos">79</span></a><span class="sd">            output = self.coefficients @ reservoir_state</span>
+</span><span id="L-80"><a href="#L-80"><span class="linenos">80</span></a>
+</span><span id="L-81"><a href="#L-81"><span class="linenos">81</span></a><span class="sd">        Args:</span>
+</span><span id="L-82"><a href="#L-82"><span class="linenos">82</span></a><span class="sd">            reservoir_state (np.typing.NDArray[np.floating]):</span>
+</span><span id="L-83"><a href="#L-83"><span class="linenos">83</span></a><span class="sd">                The input reservoir state vector.</span>
+</span><span id="L-84"><a href="#L-84"><span class="linenos">84</span></a>
+</span><span id="L-85"><a href="#L-85"><span class="linenos">85</span></a><span class="sd">        Returns:</span>
+</span><span id="L-86"><a href="#L-86"><span class="linenos">86</span></a><span class="sd">            np.typing.NDArray[np.floating]: The corresponding output value(s).</span>
+</span><span id="L-87"><a href="#L-87"><span class="linenos">87</span></a>
+</span><span id="L-88"><a href="#L-88"><span class="linenos">88</span></a><span class="sd">        Raises:</span>
+</span><span id="L-89"><a href="#L-89"><span class="linenos">89</span></a><span class="sd">            ValueError: If the readout has not been trained before use.</span>
+</span><span id="L-90"><a href="#L-90"><span class="linenos">90</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-91"><a href="#L-91"><span class="linenos">91</span></a>
+</span><span id="L-92"><a href="#L-92"><span class="linenos">92</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;coefficients&quot;</span><span class="p">):</span>
+</span><span id="L-93"><a href="#L-93"><span class="linenos">93</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Readout must be trained before use.&quot;</span><span class="p">)</span>
+</span><span id="L-94"><a href="#L-94"><span class="linenos">94</span></a>
+</span><span id="L-95"><a href="#L-95"><span class="linenos">95</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span> <span class="o">@</span> <span class="n">reservoir_state</span>
 </span></pre></div>
 
 
@@ -202,53 +195,52 @@ models, where they process the high-dimensional reservoir state and produce the 
             <div class="pdoc-code codehilite"><pre><span></span><span id="Readout-18"><a href="#Readout-18"><span class="linenos">18</span></a><span class="nd">@dataclass</span>
 </span><span id="Readout-19"><a href="#Readout-19"><span class="linenos">19</span></a><span class="k">class</span><span class="w"> </span><span class="nc">Readout</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
 </span><span id="Readout-20"><a href="#Readout-20"><span class="linenos">20</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="Readout-21"><a href="#Readout-21"><span class="linenos">21</span></a><span class="sd">    Abstract base class for a readout layer in a reservoir computing model.</span>
+</span><span id="Readout-21"><a href="#Readout-21"><span class="linenos">21</span></a><span class="sd">    Abstract base class for readout layers, defining how reservoir states map to outputs.</span>
 </span><span id="Readout-22"><a href="#Readout-22"><span class="linenos">22</span></a>
-</span><span id="Readout-23"><a href="#Readout-23"><span class="linenos">23</span></a><span class="sd">    The readout layer is responsible for mapping the high-dimensional</span>
-</span><span id="Readout-24"><a href="#Readout-24"><span class="linenos">24</span></a><span class="sd">    reservoir state to the desired output space. Different implementations</span>
-</span><span id="Readout-25"><a href="#Readout-25"><span class="linenos">25</span></a><span class="sd">    of this class can define different mapping strategies (e.g., linear, nonlinear).</span>
+</span><span id="Readout-23"><a href="#Readout-23"><span class="linenos">23</span></a><span class="sd">    A readout layer processes the high-dimensional reservoir state and transforms it into</span>
+</span><span id="Readout-24"><a href="#Readout-24"><span class="linenos">24</span></a><span class="sd">    meaningful outputs. This abstract class defines a common interface for different types of</span>
+</span><span id="Readout-25"><a href="#Readout-25"><span class="linenos">25</span></a><span class="sd">    readout layers.</span>
 </span><span id="Readout-26"><a href="#Readout-26"><span class="linenos">26</span></a>
 </span><span id="Readout-27"><a href="#Readout-27"><span class="linenos">27</span></a><span class="sd">    Attributes:</span>
 </span><span id="Readout-28"><a href="#Readout-28"><span class="linenos">28</span></a><span class="sd">        coefficients (np.typing.NDArray[np.floating]):</span>
-</span><span id="Readout-29"><a href="#Readout-29"><span class="linenos">29</span></a><span class="sd">            The transformation matrix (or coefficients) that defines the mapping</span>
-</span><span id="Readout-30"><a href="#Readout-30"><span class="linenos">30</span></a><span class="sd">            from reservoir states to output states. These coefficients are learned</span>
-</span><span id="Readout-31"><a href="#Readout-31"><span class="linenos">31</span></a><span class="sd">            during training.</span>
-</span><span id="Readout-32"><a href="#Readout-32"><span class="linenos">32</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="Readout-33"><a href="#Readout-33"><span class="linenos">33</span></a>
-</span><span id="Readout-34"><a href="#Readout-34"><span class="linenos">34</span></a>    <span class="n">coefficients</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">typing</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</span><span id="Readout-35"><a href="#Readout-35"><span class="linenos">35</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Transformation matrix (learned during training) that maps reservoir states to output values.&quot;&quot;&quot;</span>
-</span><span id="Readout-36"><a href="#Readout-36"><span class="linenos">36</span></a>
-</span><span id="Readout-37"><a href="#Readout-37"><span class="linenos">37</span></a>    <span class="nd">@abstractmethod</span>
-</span><span id="Readout-38"><a href="#Readout-38"><span class="linenos">38</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">reservoir_to_output</span><span class="p">(</span>
-</span><span id="Readout-39"><a href="#Readout-39"><span class="linenos">39</span></a>        <span class="bp">self</span><span class="p">,</span> <span class="n">reservoir_state</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">typing</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]</span>
-</span><span id="Readout-40"><a href="#Readout-40"><span class="linenos">40</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">typing</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
-</span><span id="Readout-41"><a href="#Readout-41"><span class="linenos">41</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="Readout-42"><a href="#Readout-42"><span class="linenos">42</span></a><span class="sd">        Maps a given reservoir state to an output value.</span>
-</span><span id="Readout-43"><a href="#Readout-43"><span class="linenos">43</span></a>
-</span><span id="Readout-44"><a href="#Readout-44"><span class="linenos">44</span></a><span class="sd">        This method is abstract and must be implemented by subclasses.</span>
+</span><span id="Readout-29"><a href="#Readout-29"><span class="linenos">29</span></a><span class="sd">            The trained weight matrix defining the readout transformation.</span>
+</span><span id="Readout-30"><a href="#Readout-30"><span class="linenos">30</span></a><span class="sd">            This is set during training and used for making predictions.</span>
+</span><span id="Readout-31"><a href="#Readout-31"><span class="linenos">31</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="Readout-32"><a href="#Readout-32"><span class="linenos">32</span></a>
+</span><span id="Readout-33"><a href="#Readout-33"><span class="linenos">33</span></a>    <span class="n">coefficients</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">typing</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span id="Readout-34"><a href="#Readout-34"><span class="linenos">34</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;The trained weight matrix defining the readout transformation. Set during training.&quot;&quot;&quot;</span>
+</span><span id="Readout-35"><a href="#Readout-35"><span class="linenos">35</span></a>
+</span><span id="Readout-36"><a href="#Readout-36"><span class="linenos">36</span></a>    <span class="nd">@abstractmethod</span>
+</span><span id="Readout-37"><a href="#Readout-37"><span class="linenos">37</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">reservoir_to_output</span><span class="p">(</span>
+</span><span id="Readout-38"><a href="#Readout-38"><span class="linenos">38</span></a>        <span class="bp">self</span><span class="p">,</span> <span class="n">reservoir_state</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">typing</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]</span>
+</span><span id="Readout-39"><a href="#Readout-39"><span class="linenos">39</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">typing</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
+</span><span id="Readout-40"><a href="#Readout-40"><span class="linenos">40</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="Readout-41"><a href="#Readout-41"><span class="linenos">41</span></a><span class="sd">        Convert a reservoir state into an output value.</span>
+</span><span id="Readout-42"><a href="#Readout-42"><span class="linenos">42</span></a>
+</span><span id="Readout-43"><a href="#Readout-43"><span class="linenos">43</span></a><span class="sd">        This method is implemented in subclasses to define the specific mapping</span>
+</span><span id="Readout-44"><a href="#Readout-44"><span class="linenos">44</span></a><span class="sd">        from reservoir states to outputs.</span>
 </span><span id="Readout-45"><a href="#Readout-45"><span class="linenos">45</span></a>
 </span><span id="Readout-46"><a href="#Readout-46"><span class="linenos">46</span></a><span class="sd">        Args:</span>
 </span><span id="Readout-47"><a href="#Readout-47"><span class="linenos">47</span></a><span class="sd">            reservoir_state (np.typing.NDArray[np.floating]):</span>
-</span><span id="Readout-48"><a href="#Readout-48"><span class="linenos">48</span></a><span class="sd">                The current reservoir state to be transformed into an output.</span>
+</span><span id="Readout-48"><a href="#Readout-48"><span class="linenos">48</span></a><span class="sd">                The reservoir state vector to be mapped to an output.</span>
 </span><span id="Readout-49"><a href="#Readout-49"><span class="linenos">49</span></a>
 </span><span id="Readout-50"><a href="#Readout-50"><span class="linenos">50</span></a><span class="sd">        Returns:</span>
-</span><span id="Readout-51"><a href="#Readout-51"><span class="linenos">51</span></a><span class="sd">            np.typing.NDArray[np.floating]: The computed output value(s).</span>
+</span><span id="Readout-51"><a href="#Readout-51"><span class="linenos">51</span></a><span class="sd">            np.typing.NDArray[np.floating]: The corresponding output value(s).</span>
 </span><span id="Readout-52"><a href="#Readout-52"><span class="linenos">52</span></a><span class="sd">        &quot;&quot;&quot;</span>
 </span><span id="Readout-53"><a href="#Readout-53"><span class="linenos">53</span></a>        <span class="k">pass</span>
 </span></pre></div>
 
 
-            <div class="docstring"><p>Abstract base class for a readout layer in a reservoir computing model.</p>
+            <div class="docstring"><p>Abstract base class for readout layers, defining how reservoir states map to outputs.</p>
 
-<p>The readout layer is responsible for mapping the high-dimensional
-reservoir state to the desired output space. Different implementations
-of this class can define different mapping strategies (e.g., linear, nonlinear).</p>
+<p>A readout layer processes the high-dimensional reservoir state and transforms it into
+meaningful outputs. This abstract class defines a common interface for different types of
+readout layers.</p>
 
 <p>Attributes:
     coefficients (np.typing.NDArray[np.floating]):
-        The transformation matrix (or coefficients) that defines the mapping
-        from reservoir states to output states. These coefficients are learned
-        during training.</p>
+        The trained weight matrix defining the readout transformation.
+        This is set during training and used for making predictions.</p>
 </div>
 
 
@@ -260,7 +252,7 @@ of this class can define different mapping strategies (e.g., linear, nonlinear).
     </div>
     <a class="headerlink" href="#Readout.coefficients"></a>
     
-            <div class="docstring"><p>Transformation matrix (learned during training) that maps reservoir states to output values.</p>
+            <div class="docstring"><p>The trained weight matrix defining the readout transformation. Set during training.</p>
 </div>
 
 
@@ -277,36 +269,38 @@ of this class can define different mapping strategies (e.g., linear, nonlinear).
 
     </div>
     <a class="headerlink" href="#Readout.reservoir_to_output"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="Readout.reservoir_to_output-37"><a href="#Readout.reservoir_to_output-37"><span class="linenos">37</span></a>    <span class="nd">@abstractmethod</span>
-</span><span id="Readout.reservoir_to_output-38"><a href="#Readout.reservoir_to_output-38"><span class="linenos">38</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">reservoir_to_output</span><span class="p">(</span>
-</span><span id="Readout.reservoir_to_output-39"><a href="#Readout.reservoir_to_output-39"><span class="linenos">39</span></a>        <span class="bp">self</span><span class="p">,</span> <span class="n">reservoir_state</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">typing</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]</span>
-</span><span id="Readout.reservoir_to_output-40"><a href="#Readout.reservoir_to_output-40"><span class="linenos">40</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">typing</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
-</span><span id="Readout.reservoir_to_output-41"><a href="#Readout.reservoir_to_output-41"><span class="linenos">41</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="Readout.reservoir_to_output-42"><a href="#Readout.reservoir_to_output-42"><span class="linenos">42</span></a><span class="sd">        Maps a given reservoir state to an output value.</span>
-</span><span id="Readout.reservoir_to_output-43"><a href="#Readout.reservoir_to_output-43"><span class="linenos">43</span></a>
-</span><span id="Readout.reservoir_to_output-44"><a href="#Readout.reservoir_to_output-44"><span class="linenos">44</span></a><span class="sd">        This method is abstract and must be implemented by subclasses.</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="Readout.reservoir_to_output-36"><a href="#Readout.reservoir_to_output-36"><span class="linenos">36</span></a>    <span class="nd">@abstractmethod</span>
+</span><span id="Readout.reservoir_to_output-37"><a href="#Readout.reservoir_to_output-37"><span class="linenos">37</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">reservoir_to_output</span><span class="p">(</span>
+</span><span id="Readout.reservoir_to_output-38"><a href="#Readout.reservoir_to_output-38"><span class="linenos">38</span></a>        <span class="bp">self</span><span class="p">,</span> <span class="n">reservoir_state</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">typing</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]</span>
+</span><span id="Readout.reservoir_to_output-39"><a href="#Readout.reservoir_to_output-39"><span class="linenos">39</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">typing</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
+</span><span id="Readout.reservoir_to_output-40"><a href="#Readout.reservoir_to_output-40"><span class="linenos">40</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="Readout.reservoir_to_output-41"><a href="#Readout.reservoir_to_output-41"><span class="linenos">41</span></a><span class="sd">        Convert a reservoir state into an output value.</span>
+</span><span id="Readout.reservoir_to_output-42"><a href="#Readout.reservoir_to_output-42"><span class="linenos">42</span></a>
+</span><span id="Readout.reservoir_to_output-43"><a href="#Readout.reservoir_to_output-43"><span class="linenos">43</span></a><span class="sd">        This method is implemented in subclasses to define the specific mapping</span>
+</span><span id="Readout.reservoir_to_output-44"><a href="#Readout.reservoir_to_output-44"><span class="linenos">44</span></a><span class="sd">        from reservoir states to outputs.</span>
 </span><span id="Readout.reservoir_to_output-45"><a href="#Readout.reservoir_to_output-45"><span class="linenos">45</span></a>
 </span><span id="Readout.reservoir_to_output-46"><a href="#Readout.reservoir_to_output-46"><span class="linenos">46</span></a><span class="sd">        Args:</span>
 </span><span id="Readout.reservoir_to_output-47"><a href="#Readout.reservoir_to_output-47"><span class="linenos">47</span></a><span class="sd">            reservoir_state (np.typing.NDArray[np.floating]):</span>
-</span><span id="Readout.reservoir_to_output-48"><a href="#Readout.reservoir_to_output-48"><span class="linenos">48</span></a><span class="sd">                The current reservoir state to be transformed into an output.</span>
+</span><span id="Readout.reservoir_to_output-48"><a href="#Readout.reservoir_to_output-48"><span class="linenos">48</span></a><span class="sd">                The reservoir state vector to be mapped to an output.</span>
 </span><span id="Readout.reservoir_to_output-49"><a href="#Readout.reservoir_to_output-49"><span class="linenos">49</span></a>
 </span><span id="Readout.reservoir_to_output-50"><a href="#Readout.reservoir_to_output-50"><span class="linenos">50</span></a><span class="sd">        Returns:</span>
-</span><span id="Readout.reservoir_to_output-51"><a href="#Readout.reservoir_to_output-51"><span class="linenos">51</span></a><span class="sd">            np.typing.NDArray[np.floating]: The computed output value(s).</span>
+</span><span id="Readout.reservoir_to_output-51"><a href="#Readout.reservoir_to_output-51"><span class="linenos">51</span></a><span class="sd">            np.typing.NDArray[np.floating]: The corresponding output value(s).</span>
 </span><span id="Readout.reservoir_to_output-52"><a href="#Readout.reservoir_to_output-52"><span class="linenos">52</span></a><span class="sd">        &quot;&quot;&quot;</span>
 </span><span id="Readout.reservoir_to_output-53"><a href="#Readout.reservoir_to_output-53"><span class="linenos">53</span></a>        <span class="k">pass</span>
 </span></pre></div>
 
 
-            <div class="docstring"><p>Maps a given reservoir state to an output value.</p>
+            <div class="docstring"><p>Convert a reservoir state into an output value.</p>
 
-<p>This method is abstract and must be implemented by subclasses.</p>
+<p>This method is implemented in subclasses to define the specific mapping
+from reservoir states to outputs.</p>
 
 <p>Args:
     reservoir_state (np.typing.NDArray[np.floating]):
-        The current reservoir state to be transformed into an output.</p>
+        The reservoir state vector to be mapped to an output.</p>
 
 <p>Returns:
-    np.typing.NDArray[np.floating]: The computed output value(s).</p>
+    np.typing.NDArray[np.floating]: The corresponding output value(s).</p>
 </div>
 
 
@@ -324,80 +318,62 @@ of this class can define different mapping strategies (e.g., linear, nonlinear).
 
     </div>
     <a class="headerlink" href="#LinearReadout"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="LinearReadout-56"><a href="#LinearReadout-56"><span class="linenos"> 56</span></a><span class="nd">@dataclass</span>
-</span><span id="LinearReadout-57"><a href="#LinearReadout-57"><span class="linenos"> 57</span></a><span class="k">class</span><span class="w"> </span><span class="nc">LinearReadout</span><span class="p">(</span><span class="n">Readout</span><span class="p">):</span>
-</span><span id="LinearReadout-58"><a href="#LinearReadout-58"><span class="linenos"> 58</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="LinearReadout-59"><a href="#LinearReadout-59"><span class="linenos"> 59</span></a><span class="sd">    A linear readout layer that applies a weighted transformation to the reservoir state.</span>
-</span><span id="LinearReadout-60"><a href="#LinearReadout-60"><span class="linenos"> 60</span></a>
-</span><span id="LinearReadout-61"><a href="#LinearReadout-61"><span class="linenos"> 61</span></a><span class="sd">    This class implements a simple linear mapping from the reservoir state</span>
-</span><span id="LinearReadout-62"><a href="#LinearReadout-62"><span class="linenos"> 62</span></a><span class="sd">    to the output state using matrix multiplication. It follows the equation:</span>
-</span><span id="LinearReadout-63"><a href="#LinearReadout-63"><span class="linenos"> 63</span></a>
-</span><span id="LinearReadout-64"><a href="#LinearReadout-64"><span class="linenos"> 64</span></a><span class="sd">        output = coefficients @ reservoir_state</span>
-</span><span id="LinearReadout-65"><a href="#LinearReadout-65"><span class="linenos"> 65</span></a>
-</span><span id="LinearReadout-66"><a href="#LinearReadout-66"><span class="linenos"> 66</span></a><span class="sd">    This is equivalent to applying a linear regression model to the reservoir outputs.</span>
-</span><span id="LinearReadout-67"><a href="#LinearReadout-67"><span class="linenos"> 67</span></a>
-</span><span id="LinearReadout-68"><a href="#LinearReadout-68"><span class="linenos"> 68</span></a><span class="sd">    Example:</span>
-</span><span id="LinearReadout-69"><a href="#LinearReadout-69"><span class="linenos"> 69</span></a><span class="sd">        ```python</span>
-</span><span id="LinearReadout-70"><a href="#LinearReadout-70"><span class="linenos"> 70</span></a><span class="sd">        readout = LinearReadout()</span>
-</span><span id="LinearReadout-71"><a href="#LinearReadout-71"><span class="linenos"> 71</span></a><span class="sd">        readout.coefficients = np.random.rand(1, 100)  # Example shape</span>
-</span><span id="LinearReadout-72"><a href="#LinearReadout-72"><span class="linenos"> 72</span></a><span class="sd">        output = readout.reservoir_to_output(reservoir_state)</span>
-</span><span id="LinearReadout-73"><a href="#LinearReadout-73"><span class="linenos"> 73</span></a><span class="sd">        ```</span>
-</span><span id="LinearReadout-74"><a href="#LinearReadout-74"><span class="linenos"> 74</span></a>
-</span><span id="LinearReadout-75"><a href="#LinearReadout-75"><span class="linenos"> 75</span></a><span class="sd">    Raises:</span>
-</span><span id="LinearReadout-76"><a href="#LinearReadout-76"><span class="linenos"> 76</span></a><span class="sd">        ValueError: If the readout layer is used before being trained (i.e.,</span>
-</span><span id="LinearReadout-77"><a href="#LinearReadout-77"><span class="linenos"> 77</span></a><span class="sd">        if `self.coefficients` is not set).</span>
-</span><span id="LinearReadout-78"><a href="#LinearReadout-78"><span class="linenos"> 78</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="LinearReadout-79"><a href="#LinearReadout-79"><span class="linenos"> 79</span></a>
-</span><span id="LinearReadout-80"><a href="#LinearReadout-80"><span class="linenos"> 80</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">reservoir_to_output</span><span class="p">(</span>
-</span><span id="LinearReadout-81"><a href="#LinearReadout-81"><span class="linenos"> 81</span></a>        <span class="bp">self</span><span class="p">,</span> <span class="n">reservoir_state</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">typing</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]</span>
-</span><span id="LinearReadout-82"><a href="#LinearReadout-82"><span class="linenos"> 82</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">typing</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
-</span><span id="LinearReadout-83"><a href="#LinearReadout-83"><span class="linenos"> 83</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="LinearReadout-84"><a href="#LinearReadout-84"><span class="linenos"> 84</span></a><span class="sd">        Computes the output by applying a linear transformation to the reservoir state.</span>
-</span><span id="LinearReadout-85"><a href="#LinearReadout-85"><span class="linenos"> 85</span></a>
-</span><span id="LinearReadout-86"><a href="#LinearReadout-86"><span class="linenos"> 86</span></a><span class="sd">        This method multiplies the learned coefficients with the given</span>
-</span><span id="LinearReadout-87"><a href="#LinearReadout-87"><span class="linenos"> 87</span></a><span class="sd">        reservoir state to produce the output.</span>
-</span><span id="LinearReadout-88"><a href="#LinearReadout-88"><span class="linenos"> 88</span></a>
-</span><span id="LinearReadout-89"><a href="#LinearReadout-89"><span class="linenos"> 89</span></a><span class="sd">        Args:</span>
-</span><span id="LinearReadout-90"><a href="#LinearReadout-90"><span class="linenos"> 90</span></a><span class="sd">            reservoir_state (np.typing.NDArray[np.floating]):</span>
-</span><span id="LinearReadout-91"><a href="#LinearReadout-91"><span class="linenos"> 91</span></a><span class="sd">                The current state of the reservoir.</span>
-</span><span id="LinearReadout-92"><a href="#LinearReadout-92"><span class="linenos"> 92</span></a>
-</span><span id="LinearReadout-93"><a href="#LinearReadout-93"><span class="linenos"> 93</span></a><span class="sd">        Returns:</span>
-</span><span id="LinearReadout-94"><a href="#LinearReadout-94"><span class="linenos"> 94</span></a><span class="sd">            np.typing.NDArray[np.floating]: The predicted output.</span>
-</span><span id="LinearReadout-95"><a href="#LinearReadout-95"><span class="linenos"> 95</span></a>
-</span><span id="LinearReadout-96"><a href="#LinearReadout-96"><span class="linenos"> 96</span></a><span class="sd">        Raises:</span>
-</span><span id="LinearReadout-97"><a href="#LinearReadout-97"><span class="linenos"> 97</span></a><span class="sd">            ValueError: If `coefficients` have not been set (i.e., the model has not been trained).</span>
-</span><span id="LinearReadout-98"><a href="#LinearReadout-98"><span class="linenos"> 98</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="LinearReadout-99"><a href="#LinearReadout-99"><span class="linenos"> 99</span></a>
-</span><span id="LinearReadout-100"><a href="#LinearReadout-100"><span class="linenos">100</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;coefficients&quot;</span><span class="p">):</span>
-</span><span id="LinearReadout-101"><a href="#LinearReadout-101"><span class="linenos">101</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Readout layer must be trained before use. Call the train method first.&quot;</span><span class="p">)</span>
-</span><span id="LinearReadout-102"><a href="#LinearReadout-102"><span class="linenos">102</span></a>
-</span><span id="LinearReadout-103"><a href="#LinearReadout-103"><span class="linenos">103</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span> <span class="o">@</span> <span class="n">reservoir_state</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="LinearReadout-56"><a href="#LinearReadout-56"><span class="linenos">56</span></a><span class="nd">@dataclass</span>
+</span><span id="LinearReadout-57"><a href="#LinearReadout-57"><span class="linenos">57</span></a><span class="k">class</span><span class="w"> </span><span class="nc">LinearReadout</span><span class="p">(</span><span class="n">Readout</span><span class="p">):</span>
+</span><span id="LinearReadout-58"><a href="#LinearReadout-58"><span class="linenos">58</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="LinearReadout-59"><a href="#LinearReadout-59"><span class="linenos">59</span></a><span class="sd">    Linear readout layer implementing a simple weighted transformation.</span>
+</span><span id="LinearReadout-60"><a href="#LinearReadout-60"><span class="linenos">60</span></a>
+</span><span id="LinearReadout-61"><a href="#LinearReadout-61"><span class="linenos">61</span></a><span class="sd">    This readout layer applies a linear transformation using a trained weight matrix</span>
+</span><span id="LinearReadout-62"><a href="#LinearReadout-62"><span class="linenos">62</span></a><span class="sd">    to convert reservoir states into output values. The transformation follows the form:</span>
+</span><span id="LinearReadout-63"><a href="#LinearReadout-63"><span class="linenos">63</span></a>
+</span><span id="LinearReadout-64"><a href="#LinearReadout-64"><span class="linenos">64</span></a><span class="sd">        output = W @ reservoir_state</span>
+</span><span id="LinearReadout-65"><a href="#LinearReadout-65"><span class="linenos">65</span></a>
+</span><span id="LinearReadout-66"><a href="#LinearReadout-66"><span class="linenos">66</span></a><span class="sd">    where `W` is the coefficient matrix learned during training.</span>
+</span><span id="LinearReadout-67"><a href="#LinearReadout-67"><span class="linenos">67</span></a>
+</span><span id="LinearReadout-68"><a href="#LinearReadout-68"><span class="linenos">68</span></a><span class="sd">    Raises:</span>
+</span><span id="LinearReadout-69"><a href="#LinearReadout-69"><span class="linenos">69</span></a><span class="sd">        ValueError: If the readout layer is used before training (i.e., before `coefficients` is set).</span>
+</span><span id="LinearReadout-70"><a href="#LinearReadout-70"><span class="linenos">70</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="LinearReadout-71"><a href="#LinearReadout-71"><span class="linenos">71</span></a>
+</span><span id="LinearReadout-72"><a href="#LinearReadout-72"><span class="linenos">72</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">reservoir_to_output</span><span class="p">(</span>
+</span><span id="LinearReadout-73"><a href="#LinearReadout-73"><span class="linenos">73</span></a>        <span class="bp">self</span><span class="p">,</span> <span class="n">reservoir_state</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">typing</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]</span>
+</span><span id="LinearReadout-74"><a href="#LinearReadout-74"><span class="linenos">74</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">typing</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
+</span><span id="LinearReadout-75"><a href="#LinearReadout-75"><span class="linenos">75</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="LinearReadout-76"><a href="#LinearReadout-76"><span class="linenos">76</span></a><span class="sd">        Apply a linear transformation to map the reservoir state to an output.</span>
+</span><span id="LinearReadout-77"><a href="#LinearReadout-77"><span class="linenos">77</span></a>
+</span><span id="LinearReadout-78"><a href="#LinearReadout-78"><span class="linenos">78</span></a><span class="sd">        This function performs a simple matrix multiplication:</span>
+</span><span id="LinearReadout-79"><a href="#LinearReadout-79"><span class="linenos">79</span></a>
+</span><span id="LinearReadout-80"><a href="#LinearReadout-80"><span class="linenos">80</span></a><span class="sd">            output = self.coefficients @ reservoir_state</span>
+</span><span id="LinearReadout-81"><a href="#LinearReadout-81"><span class="linenos">81</span></a>
+</span><span id="LinearReadout-82"><a href="#LinearReadout-82"><span class="linenos">82</span></a><span class="sd">        Args:</span>
+</span><span id="LinearReadout-83"><a href="#LinearReadout-83"><span class="linenos">83</span></a><span class="sd">            reservoir_state (np.typing.NDArray[np.floating]):</span>
+</span><span id="LinearReadout-84"><a href="#LinearReadout-84"><span class="linenos">84</span></a><span class="sd">                The input reservoir state vector.</span>
+</span><span id="LinearReadout-85"><a href="#LinearReadout-85"><span class="linenos">85</span></a>
+</span><span id="LinearReadout-86"><a href="#LinearReadout-86"><span class="linenos">86</span></a><span class="sd">        Returns:</span>
+</span><span id="LinearReadout-87"><a href="#LinearReadout-87"><span class="linenos">87</span></a><span class="sd">            np.typing.NDArray[np.floating]: The corresponding output value(s).</span>
+</span><span id="LinearReadout-88"><a href="#LinearReadout-88"><span class="linenos">88</span></a>
+</span><span id="LinearReadout-89"><a href="#LinearReadout-89"><span class="linenos">89</span></a><span class="sd">        Raises:</span>
+</span><span id="LinearReadout-90"><a href="#LinearReadout-90"><span class="linenos">90</span></a><span class="sd">            ValueError: If the readout has not been trained before use.</span>
+</span><span id="LinearReadout-91"><a href="#LinearReadout-91"><span class="linenos">91</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="LinearReadout-92"><a href="#LinearReadout-92"><span class="linenos">92</span></a>
+</span><span id="LinearReadout-93"><a href="#LinearReadout-93"><span class="linenos">93</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;coefficients&quot;</span><span class="p">):</span>
+</span><span id="LinearReadout-94"><a href="#LinearReadout-94"><span class="linenos">94</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Readout must be trained before use.&quot;</span><span class="p">)</span>
+</span><span id="LinearReadout-95"><a href="#LinearReadout-95"><span class="linenos">95</span></a>
+</span><span id="LinearReadout-96"><a href="#LinearReadout-96"><span class="linenos">96</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span> <span class="o">@</span> <span class="n">reservoir_state</span>
 </span></pre></div>
 
 
-            <div class="docstring"><p>A linear readout layer that applies a weighted transformation to the reservoir state.</p>
+            <div class="docstring"><p>Linear readout layer implementing a simple weighted transformation.</p>
 
-<p>This class implements a simple linear mapping from the reservoir state
-to the output state using matrix multiplication. It follows the equation:</p>
+<p>This readout layer applies a linear transformation using a trained weight matrix
+to convert reservoir states into output values. The transformation follows the form:</p>
 
-<pre><code>output = coefficients @ reservoir_state
+<pre><code>output = W @ reservoir_state
 </code></pre>
 
-<p>This is equivalent to applying a linear regression model to the reservoir outputs.</p>
-
-<p>Example:</p>
-
-<pre><code><div class="pdoc-code codehilite">
-<pre><span></span><code><span class="n">readout</span> <span class="o">=</span> <span class="n">LinearReadout</span><span class="p">()</span>
-<span class="n">readout</span><span class="o">.</span><span class="n">coefficients</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>  <span class="c1"># Example shape</span>
-<span class="n">output</span> <span class="o">=</span> <span class="n">readout</span><span class="o">.</span><span class="n">reservoir_to_output</span><span class="p">(</span><span class="n">reservoir_state</span><span class="p">)</span>
-</code></pre>
-</div>
-</code></pre>
+<p>where <code>W</code> is the coefficient matrix learned during training.</p>
 
 <p>Raises:
-    ValueError: If the readout layer is used before being trained (i.e.,
-    if <code>self.coefficients</code> is not set).</p>
+    ValueError: If the readout layer is used before training (i.e., before <code><a href="#LinearReadout.coefficients">coefficients</a></code> is set).</p>
 </div>
 
 
@@ -412,47 +388,50 @@ to the output state using matrix multiplication. It follows the equation:</p>
 
     </div>
     <a class="headerlink" href="#LinearReadout.reservoir_to_output"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="LinearReadout.reservoir_to_output-80"><a href="#LinearReadout.reservoir_to_output-80"><span class="linenos"> 80</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">reservoir_to_output</span><span class="p">(</span>
-</span><span id="LinearReadout.reservoir_to_output-81"><a href="#LinearReadout.reservoir_to_output-81"><span class="linenos"> 81</span></a>        <span class="bp">self</span><span class="p">,</span> <span class="n">reservoir_state</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">typing</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]</span>
-</span><span id="LinearReadout.reservoir_to_output-82"><a href="#LinearReadout.reservoir_to_output-82"><span class="linenos"> 82</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">typing</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
-</span><span id="LinearReadout.reservoir_to_output-83"><a href="#LinearReadout.reservoir_to_output-83"><span class="linenos"> 83</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="LinearReadout.reservoir_to_output-84"><a href="#LinearReadout.reservoir_to_output-84"><span class="linenos"> 84</span></a><span class="sd">        Computes the output by applying a linear transformation to the reservoir state.</span>
-</span><span id="LinearReadout.reservoir_to_output-85"><a href="#LinearReadout.reservoir_to_output-85"><span class="linenos"> 85</span></a>
-</span><span id="LinearReadout.reservoir_to_output-86"><a href="#LinearReadout.reservoir_to_output-86"><span class="linenos"> 86</span></a><span class="sd">        This method multiplies the learned coefficients with the given</span>
-</span><span id="LinearReadout.reservoir_to_output-87"><a href="#LinearReadout.reservoir_to_output-87"><span class="linenos"> 87</span></a><span class="sd">        reservoir state to produce the output.</span>
-</span><span id="LinearReadout.reservoir_to_output-88"><a href="#LinearReadout.reservoir_to_output-88"><span class="linenos"> 88</span></a>
-</span><span id="LinearReadout.reservoir_to_output-89"><a href="#LinearReadout.reservoir_to_output-89"><span class="linenos"> 89</span></a><span class="sd">        Args:</span>
-</span><span id="LinearReadout.reservoir_to_output-90"><a href="#LinearReadout.reservoir_to_output-90"><span class="linenos"> 90</span></a><span class="sd">            reservoir_state (np.typing.NDArray[np.floating]):</span>
-</span><span id="LinearReadout.reservoir_to_output-91"><a href="#LinearReadout.reservoir_to_output-91"><span class="linenos"> 91</span></a><span class="sd">                The current state of the reservoir.</span>
-</span><span id="LinearReadout.reservoir_to_output-92"><a href="#LinearReadout.reservoir_to_output-92"><span class="linenos"> 92</span></a>
-</span><span id="LinearReadout.reservoir_to_output-93"><a href="#LinearReadout.reservoir_to_output-93"><span class="linenos"> 93</span></a><span class="sd">        Returns:</span>
-</span><span id="LinearReadout.reservoir_to_output-94"><a href="#LinearReadout.reservoir_to_output-94"><span class="linenos"> 94</span></a><span class="sd">            np.typing.NDArray[np.floating]: The predicted output.</span>
-</span><span id="LinearReadout.reservoir_to_output-95"><a href="#LinearReadout.reservoir_to_output-95"><span class="linenos"> 95</span></a>
-</span><span id="LinearReadout.reservoir_to_output-96"><a href="#LinearReadout.reservoir_to_output-96"><span class="linenos"> 96</span></a><span class="sd">        Raises:</span>
-</span><span id="LinearReadout.reservoir_to_output-97"><a href="#LinearReadout.reservoir_to_output-97"><span class="linenos"> 97</span></a><span class="sd">            ValueError: If `coefficients` have not been set (i.e., the model has not been trained).</span>
-</span><span id="LinearReadout.reservoir_to_output-98"><a href="#LinearReadout.reservoir_to_output-98"><span class="linenos"> 98</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="LinearReadout.reservoir_to_output-99"><a href="#LinearReadout.reservoir_to_output-99"><span class="linenos"> 99</span></a>
-</span><span id="LinearReadout.reservoir_to_output-100"><a href="#LinearReadout.reservoir_to_output-100"><span class="linenos">100</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;coefficients&quot;</span><span class="p">):</span>
-</span><span id="LinearReadout.reservoir_to_output-101"><a href="#LinearReadout.reservoir_to_output-101"><span class="linenos">101</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Readout layer must be trained before use. Call the train method first.&quot;</span><span class="p">)</span>
-</span><span id="LinearReadout.reservoir_to_output-102"><a href="#LinearReadout.reservoir_to_output-102"><span class="linenos">102</span></a>
-</span><span id="LinearReadout.reservoir_to_output-103"><a href="#LinearReadout.reservoir_to_output-103"><span class="linenos">103</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span> <span class="o">@</span> <span class="n">reservoir_state</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="LinearReadout.reservoir_to_output-72"><a href="#LinearReadout.reservoir_to_output-72"><span class="linenos">72</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">reservoir_to_output</span><span class="p">(</span>
+</span><span id="LinearReadout.reservoir_to_output-73"><a href="#LinearReadout.reservoir_to_output-73"><span class="linenos">73</span></a>        <span class="bp">self</span><span class="p">,</span> <span class="n">reservoir_state</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">typing</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]</span>
+</span><span id="LinearReadout.reservoir_to_output-74"><a href="#LinearReadout.reservoir_to_output-74"><span class="linenos">74</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">typing</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
+</span><span id="LinearReadout.reservoir_to_output-75"><a href="#LinearReadout.reservoir_to_output-75"><span class="linenos">75</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="LinearReadout.reservoir_to_output-76"><a href="#LinearReadout.reservoir_to_output-76"><span class="linenos">76</span></a><span class="sd">        Apply a linear transformation to map the reservoir state to an output.</span>
+</span><span id="LinearReadout.reservoir_to_output-77"><a href="#LinearReadout.reservoir_to_output-77"><span class="linenos">77</span></a>
+</span><span id="LinearReadout.reservoir_to_output-78"><a href="#LinearReadout.reservoir_to_output-78"><span class="linenos">78</span></a><span class="sd">        This function performs a simple matrix multiplication:</span>
+</span><span id="LinearReadout.reservoir_to_output-79"><a href="#LinearReadout.reservoir_to_output-79"><span class="linenos">79</span></a>
+</span><span id="LinearReadout.reservoir_to_output-80"><a href="#LinearReadout.reservoir_to_output-80"><span class="linenos">80</span></a><span class="sd">            output = self.coefficients @ reservoir_state</span>
+</span><span id="LinearReadout.reservoir_to_output-81"><a href="#LinearReadout.reservoir_to_output-81"><span class="linenos">81</span></a>
+</span><span id="LinearReadout.reservoir_to_output-82"><a href="#LinearReadout.reservoir_to_output-82"><span class="linenos">82</span></a><span class="sd">        Args:</span>
+</span><span id="LinearReadout.reservoir_to_output-83"><a href="#LinearReadout.reservoir_to_output-83"><span class="linenos">83</span></a><span class="sd">            reservoir_state (np.typing.NDArray[np.floating]):</span>
+</span><span id="LinearReadout.reservoir_to_output-84"><a href="#LinearReadout.reservoir_to_output-84"><span class="linenos">84</span></a><span class="sd">                The input reservoir state vector.</span>
+</span><span id="LinearReadout.reservoir_to_output-85"><a href="#LinearReadout.reservoir_to_output-85"><span class="linenos">85</span></a>
+</span><span id="LinearReadout.reservoir_to_output-86"><a href="#LinearReadout.reservoir_to_output-86"><span class="linenos">86</span></a><span class="sd">        Returns:</span>
+</span><span id="LinearReadout.reservoir_to_output-87"><a href="#LinearReadout.reservoir_to_output-87"><span class="linenos">87</span></a><span class="sd">            np.typing.NDArray[np.floating]: The corresponding output value(s).</span>
+</span><span id="LinearReadout.reservoir_to_output-88"><a href="#LinearReadout.reservoir_to_output-88"><span class="linenos">88</span></a>
+</span><span id="LinearReadout.reservoir_to_output-89"><a href="#LinearReadout.reservoir_to_output-89"><span class="linenos">89</span></a><span class="sd">        Raises:</span>
+</span><span id="LinearReadout.reservoir_to_output-90"><a href="#LinearReadout.reservoir_to_output-90"><span class="linenos">90</span></a><span class="sd">            ValueError: If the readout has not been trained before use.</span>
+</span><span id="LinearReadout.reservoir_to_output-91"><a href="#LinearReadout.reservoir_to_output-91"><span class="linenos">91</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="LinearReadout.reservoir_to_output-92"><a href="#LinearReadout.reservoir_to_output-92"><span class="linenos">92</span></a>
+</span><span id="LinearReadout.reservoir_to_output-93"><a href="#LinearReadout.reservoir_to_output-93"><span class="linenos">93</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;coefficients&quot;</span><span class="p">):</span>
+</span><span id="LinearReadout.reservoir_to_output-94"><a href="#LinearReadout.reservoir_to_output-94"><span class="linenos">94</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Readout must be trained before use.&quot;</span><span class="p">)</span>
+</span><span id="LinearReadout.reservoir_to_output-95"><a href="#LinearReadout.reservoir_to_output-95"><span class="linenos">95</span></a>
+</span><span id="LinearReadout.reservoir_to_output-96"><a href="#LinearReadout.reservoir_to_output-96"><span class="linenos">96</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span> <span class="o">@</span> <span class="n">reservoir_state</span>
 </span></pre></div>
 
 
-            <div class="docstring"><p>Computes the output by applying a linear transformation to the reservoir state.</p>
+            <div class="docstring"><p>Apply a linear transformation to map the reservoir state to an output.</p>
 
-<p>This method multiplies the learned coefficients with the given
-reservoir state to produce the output.</p>
+<p>This function performs a simple matrix multiplication:</p>
+
+<pre><code>output = self.coefficients @ reservoir_state
+</code></pre>
 
 <p>Args:
     reservoir_state (np.typing.NDArray[np.floating]):
-        The current state of the reservoir.</p>
+        The input reservoir state vector.</p>
 
 <p>Returns:
-    np.typing.NDArray[np.floating]: The predicted output.</p>
+    np.typing.NDArray[np.floating]: The corresponding output value(s).</p>
 
 <p>Raises:
-    ValueError: If <code><a href="#LinearReadout.coefficients">coefficients</a></code> have not been set (i.e., the model has not been trained).</p>
+    ValueError: If the readout has not been trained before use.</p>
 </div>
 
 
