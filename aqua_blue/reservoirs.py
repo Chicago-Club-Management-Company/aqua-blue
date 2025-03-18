@@ -9,6 +9,7 @@ from typing import Optional, Callable, TYPE_CHECKING
 
 import numpy as np
 
+from .utilities import make_sparse, set_spectral
 
 #: Type alias for activation function. Callable taking in a numpy array, and returning a numpy array of the same shape
 ActivationFunction = Callable[[np.typing.NDArray[np.floating]], np.typing.NDArray[np.floating]]
@@ -20,26 +21,26 @@ if not TYPE_CHECKING:
 
 @dataclass
 class Reservoir(ABC):
-
+    
     """
     Abstract base reservoir class defining input state -> reservoir state
     """
-
+    
     input_dimensionality: int
     """dimensionality of the input state"""
-
+    
     reservoir_dimensionality: int
     """dimensionality of the reservoir state, equivalently the reservoir size"""
-
+    
     res_state: np.typing.NDArray[np.floating] = field(init=False)
     """reservoir state, necessary property when performing training loop"""
-
+    
     @abstractmethod
     def update_reservoir(self, input_state: np.typing.NDArray[np.floating]) -> np.typing.NDArray[np.floating]:
         
         """
         Map from input state to reservoir state
-
+        
         Args:
             input_state: input state to map to reservoir state
         """
@@ -49,19 +50,19 @@ class Reservoir(ABC):
 
 @dataclass
 class DynamicalReservoir(Reservoir):
-
+    
     """
     Dynamical reservoir state, defined by the mapping:
     y_t = f(w_in @ x_t)
     where f is some nonlinear activation function
     """
-
+    
     generator: Optional[np.random.Generator] = None
     """
     random generator for the class to use
     will be set to np.random.default_rng(seed=0) if not specified
     """
-
+    
     w_in: Optional[np.typing.NDArray[np.floating]] = None
     """
     input linear mapping. must be shape (self.reservoir_dimensionality, self.input_dimensionality)
@@ -76,12 +77,22 @@ class DynamicalReservoir(Reservoir):
     """
     activation function f. defaults to np.tanh
     """
-
+    
     leaking_rate: float = 1
     """ 
     leaking rate for the reservoir state. Defaults to 1
     """
     
+    sparsity: Optional[float]=None
+    """
+    sparsity of the reservoir weight matrix. (0, 1] 
+    """
+    
+    spectral_radius: Optional[float]=None
+    """
+    spectral radius of reservoir weight matrix.
+    Recommended values - [0.9, 1.2] 
+    """
     def __post_init__(self):
         
         if self.generator is None:
@@ -99,7 +110,12 @@ class DynamicalReservoir(Reservoir):
                 high=0.5, 
                 size=(self.reservoir_dimensionality, self.reservoir_dimensionality)
             )
-            self.w_res = 0.95 * self.w_res / np.linalg.norm(self.w_res, ord=2)
+        
+        if self.spectral_radius:
+            self.w_res = set_spectral(self.w_res, self.spectral_radius)
+        
+        if self.sparsity:
+            self.w_res = make_sparse(self.w_res, self.sparsity, self.generator)
         
         self.res_state = np.zeros(self.reservoir_dimensionality)
     
