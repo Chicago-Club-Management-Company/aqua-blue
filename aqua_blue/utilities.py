@@ -95,11 +95,11 @@ def make_sparse(
     generator: np.random.Generator
         NumPy Generator to create random numbers
     """
-
+    
     if not generator:
         generator = np.random.default_rng(seed=0)
-
-    mask = generator.random(*weight_matrix) < sparsity 
+    
+    mask = generator.random(weight_matrix.shape) < sparsity 
     return weight_matrix * mask
 
 def set_spectral(
