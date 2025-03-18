@@ -58,19 +58,58 @@ class Normalizer:
         
         Args:
             time_series (TimeSeries): Time series to denormalize
-
+        
         Returns:
             TimeSeries: The denormalized time series
-
+        
         Raises:
             ValueError: If the normalizer has not yet been used
         """
-
+        
         if not hasattr(self, "means") or not hasattr(self, "standard_deviations"):
             raise ValueError("You can only denormalize after normalizing a time series")
-
+        
         arr = time_series.dependent_variable
         arr = arr * self.standard_deviations
         arr = arr + self.means
-
+        
         return TimeSeries(dependent_variable=arr, times=time_series.times)
+
+def make_sparse(
+    weight_matrix: np.typing.NDArray[np.floating], 
+    sparsity: float
+) -> np.typing.NDArray[np.floating]:
+    """
+    Make a weight matrix sparse 
+    
+    Params: 
+    
+    weight_matrix: np.typing.NDArray[np.floating]
+        Weight matrix to be made sparse
+    
+    sparsity: float 
+        Extent of how sparse to make the weight matrix. Ranges from 0 to 1.
+    """
+    
+    return weight_matrix * (np.random.rand(*weight_matrix.shape) < sparsity)
+
+def set_spectral(
+    weight_matrix: np.typing.NDArray[np.floating], 
+    spectral_radius: float
+) -> np.typing.NDArray[np.floating]:
+    
+    """
+    Set the spectral radius of the weight matrix 
+    
+    Params: 
+    
+    weight_matrix: np.typing.NDArray[np.floating]
+        Weight matrix whose spectral radius is to be set
+    
+    spectral_radius: float
+        p(W) The largest absolute eigenvalue of the weight matrix. 
+        Values less than 1.0 are recommended for tasks that require significant memory fading. 
+        Values between 1-1.5 are recommended for takes that are memory dependent. 
+    """
+    
+    return spectral_radius/np.linalg.norm(weight_matrix, ord=2) * weight_matrix
