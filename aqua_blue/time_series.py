@@ -59,7 +59,6 @@ class TimeSeries:
             warnings.warn(
                 f"TimeSeries.dependent_variable should have shape (number of steps, dimensionality). "
                 f"The shape has been changed from {(num_steps,)} to {self.dependent_variable.shape}",
-                ShapeChangedWarning
             )
 
     def save(self, fp: Union[IO, str, Path], header: str = "", delimiter=","):
