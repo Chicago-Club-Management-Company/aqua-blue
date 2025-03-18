@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 
 import datetime
 from zoneinfo import ZoneInfo
@@ -49,5 +48,4 @@ def main():
 
 if __name__ == "__main__":
 
-    mpl.use("TkAgg")
     main()

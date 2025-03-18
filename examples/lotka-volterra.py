@@ -1,7 +1,6 @@
 import numpy as np
 from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 import aqua_blue
 
 
@@ -55,7 +54,6 @@ def main():
 
 if __name__ == "__main__":
 
-    mpl.use("TkAgg")
     main()
 
  
