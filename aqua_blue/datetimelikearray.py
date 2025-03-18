@@ -63,7 +63,9 @@ class DatetimeLikeArray(np.ndarray):
             obj[:] = new_arr
             return obj
 
-        # Handle lists of datetime.datetime objects
+        # If you pass List[datetime.datetime], then create a timezone aware array of np.datetime64
+        # Store the timezone information of the first element
+        # This means that all elements must belong to the same timezone.
         tz_ = input_array[0].tzinfo if input_array[0].tzinfo else ZoneInfo('UTC')
 
         for dt in input_array:
@@ -71,10 +73,9 @@ class DatetimeLikeArray(np.ndarray):
             if current_tz != tz_:
                 raise ValueError("All elements must belong to the same timezone.")
 
-        # Convert datetime objects to timezone-naive ISO format
+        # Purge the timezone information from the datetime objects
         generator = (dt.replace(tzinfo=None).isoformat() for dt in input_array)
         datetime64_array = np.fromiter(generator, dtype=dtype)
-
         tz_offset_ = datetime.datetime.now(tz_).utcoffset()
         seconds_offset = tz_offset_.total_seconds() if tz_offset_ else 0
         np_offset = np.timedelta64(int(np.abs(seconds_offset)), 's')
@@ -84,10 +85,11 @@ class DatetimeLikeArray(np.ndarray):
         else:
             datetime64_array -= np_offset
 
+        # Initialize an NDArray and populate with the datetime values
         obj = super().__new__(cls, datetime64_array.shape, dtype, buffer, offset, strides, order)
         obj[:] = datetime64_array
 
-        # Store timezone information
+        # Set the timezone and offset of the array
         obj.tz = tz_
         obj.tz_offset = tz_offset_ if tz_offset_ else datetime.timedelta(0)
         return obj
@@ -109,6 +111,7 @@ class DatetimeLikeArray(np.ndarray):
             bool: True if both arrays and their timezones are equal, otherwise False.
         """
         if self.tz and other.tz:
+            # Due to .tzinfo being abstract, we compare the offsets rather than the timezone objects themselves
             tzs_equal = datetime.datetime.now(self.tz).utcoffset() == datetime.datetime.now(other.tz).utcoffset()
             arrays_equal = bool(np.all(super().__eq__(other)))
             return arrays_equal and tzs_equal
@@ -131,7 +134,8 @@ class DatetimeLikeArray(np.ndarray):
         if not self.tz:
             return arr.tolist()
 
-        tz_offset = self.tz_offset if self.tz_offset else datetime.timedelta(0)
+        # Check if it's None for type-checking
+        tz_offset: datetime.timedelta = self.tz_offset if self.tz_offset else datetime.timedelta(0)
         np_offset = np.timedelta64(int(np.abs(tz_offset.total_seconds())), 's')
 
         if tz_offset.total_seconds() < 0:

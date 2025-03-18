@@ -38,7 +38,9 @@ class TimeSeries:
         Ensures proper formatting of time values and checks for uniform spacing.
         Raises an error if the time values are not uniformly spaced.
         """
+        # If List[float | int | datetime] is passed, convert to NDArray, NDArray, or DatetimeLikeArray respectively
         if isinstance(self.times[0], datetime):
+            # For some reason, NumPy does not automatically handle datetime object dtypes as np.datetime64.
             dtype_ = 'datetime64[s]'
         else:
             dtype_ = np.dtype(type(self.times[0]))
@@ -69,6 +71,8 @@ class TimeSeries:
             header (str, optional): An optional header. Defaults to an empty string.
             delimiter (str, optional): The delimiter used in the output file. Defaults to a comma.
         """
+        # This should work just fine as long as we are writing datetime objects in UTC.
+
         np.savetxt(
             fp,
             np.vstack((self.times, self.dependent_variable.T)).T,
@@ -98,7 +102,7 @@ class TimeSeries:
             tz (ZoneInfo, optional): Timezone to apply to the time data. Defaults to None.
 
         Returns:
-            TimeSeries: A populated TimeSeries instance.
+            TimeSeries: A TimeSeries instance populated by data from the csv file.
         """
         data = np.loadtxt(fp, delimiter=",")
         times_ = data[:, time_index]
@@ -150,7 +154,7 @@ class TimeSeries:
         Adds two TimeSeries instances element-wise.
         """
         if not len(self.times) == len(other.times):
-            raise ValueError("Can only add TimeSeries instances with the same number of timesteps")
+            raise ValueError("Can only add TimeSeries instances that have the same number of timesteps")
         if not np.all(self.times == other.times):
             raise ValueError("Can only add TimeSeries instances that span the same times")
         return TimeSeries(
@@ -163,7 +167,7 @@ class TimeSeries:
         Subtracts two TimeSeries instances element-wise.
         """
         if not len(self.times) == len(other.times):
-            raise ValueError("Can only subtract TimeSeries instances with the same number of timesteps")
+            raise ValueError("Can only subtract TimeSeries instances that have the same number of timesteps")
         if not np.all(self.times == other.times):
             raise ValueError("Can only subtract TimeSeries instances that span the same times")
         return TimeSeries(

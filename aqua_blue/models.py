@@ -100,7 +100,7 @@ class Model:
             raise ValueError(f"warmup must be smaller than number of timesteps ({len(input_time_series)})")
 
         time_series_array = input_time_series.dependent_variable
-        independent_variables = np.zeros((time_series_array.shape[0] - 1, self.reservoir.reservoir_dimensionality))
+        independent_variables = np.zeros((time_series_array.shape[0]-1, self.reservoir.reservoir_dimensionality))
 
         for i in range(independent_variables.shape[0]):
             independent_variables[i] = self.reservoir.update_reservoir(time_series_array[i])
@@ -141,7 +141,7 @@ class Model:
                 )
                 continue
             predictions[i, :] = self.readout.reservoir_to_output(
-                self.reservoir.update_reservoir(predictions[i - 1, :])
+                self.reservoir.update_reservoir(predictions[i-1, :])
             )
 
         times_ = DatetimeLikeArray.from_array(

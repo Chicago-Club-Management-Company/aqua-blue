@@ -28,6 +28,7 @@ if not TYPE_CHECKING:
 
 @dataclass
 class Reservoir(ABC):
+
     """
     Abstract base class defining a reservoir in an Echo State Network (ESN).
 
@@ -54,6 +55,7 @@ class Reservoir(ABC):
 
     @abstractmethod
     def update_reservoir(self, input_state: np.typing.NDArray[np.floating]) -> np.typing.NDArray[np.floating]:
+
         """
         Updates the reservoir state given an input state.
 
@@ -67,11 +69,13 @@ class Reservoir(ABC):
         Returns:
             np.ndarray: The updated reservoir state.
         """
+
         pass
 
 
 @dataclass
 class DynamicalReservoir(Reservoir):
+
     """
     A dynamical reservoir with tunable properties.
 
@@ -137,6 +141,7 @@ class DynamicalReservoir(Reservoir):
     """
 
     def __post_init__(self):
+
         """
         Initializes the reservoir by generating input and reservoir weight matrices (if not provided).
 
@@ -165,6 +170,7 @@ class DynamicalReservoir(Reservoir):
         self.res_state = np.zeros(self.reservoir_dimensionality)
 
     def update_reservoir(self, input_state: np.typing.NDArray[np.floating]) -> np.typing.NDArray[np.floating]:
+
         """
         Updates the reservoir state given an input.
 
@@ -181,6 +187,7 @@ class DynamicalReservoir(Reservoir):
         Returns:
             np.ndarray: The updated reservoir state.
         """
+
         assert isinstance(self.w_in, np.ndarray)
         assert isinstance(self.w_res, np.ndarray)
 
