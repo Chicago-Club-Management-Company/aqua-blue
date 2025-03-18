@@ -138,7 +138,7 @@ jobs:
           pip install .[dev]
       - name: Build pdoc documentation
         run: >-
-          pdoc --html aqua_blue/ -o _build/
+          pdoc --html --math aqua_blue/ -o _build/
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
