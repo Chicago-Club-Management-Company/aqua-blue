@@ -17,7 +17,7 @@ from .datetimelikearray import DatetimeLikeArray
 
 class ShapeChangedWarning(Warning):
     """
-    Warning for cases where TimeSeries.__post_init__ alters the shape of the dependent variable.
+    Warning for cases where `TimeSeries.__post_init__` alters the shape of the dependent variable.
     """
 
 

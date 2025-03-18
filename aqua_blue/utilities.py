@@ -90,16 +90,13 @@ def make_sparse(
     """
     Make a weight matrix sparse 
     
-    Params: 
+    Args:
     
-    weight_matrix: np.typing.NDArray[np.floating]
-        Weight matrix to be made sparse
-    
-    sparsity: float 
-        Extent of how sparse to make the weight matrix. Ranges from 0 to 1.
-    
-    generator: np.random.Generator
-        NumPy Generator to create random numbers
+        weight_matrix (np.typing.NDArray[np.floating]): Weight matrix to be made sparse
+
+        sparsity (float): Extent of how sparse to make the weight matrix. Ranges from 0 to 1.
+
+        generator (np.random.Generator): NumPy Generator to create random numbers
     """
     
     if not generator:
@@ -117,15 +114,14 @@ def set_spectral(
     """
     Set the spectral radius of the weight matrix 
     
-    Params: 
+    Args:
     
-    weight_matrix: np.typing.NDArray[np.floating]
-        Weight matrix whose spectral radius is to be set
-    
-    spectral_radius: float
-        p(W) The largest absolute eigenvalue of the weight matrix. 
-        Values less than 1.0 are recommended for tasks that require significant memory fading. 
-        Values between 1-1.5 are recommended for tasks that are memory dependent. 
+        weight_matrix (np.typing.NDArray[np.floating]): Weight matrix whose spectral radius is to be set
+
+        spectral_radius (float):
+            The largest absolute singular value of the weight matrix.
+            Values less than 1.0 are recommended for tasks that require significant memory fading.
+            Values between 1-1.5 are recommended for tasks that are memory dependent.
     """
     
     return spectral_radius / np.linalg.norm(weight_matrix, ord=2) * weight_matrix

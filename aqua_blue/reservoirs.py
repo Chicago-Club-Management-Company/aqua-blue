@@ -75,15 +75,12 @@ class DynamicalReservoir(Reservoir):
 
     This reservoir is defined by the equation:
 
-    $y_t = (1 - \alpha) y_{t-1} + \alpha f(W_{in} x_t + W_{res} y_{t-1})$
+    $$y_t = (1 - \alpha) y_{t-1} + \alpha f(W_\text{in} x_t + W_\text{res} y_{t-1})$$
 
-    where:
-        - $x_t$ is the input at time step $t$.
-        - $y_t$ is the reservoir state at time $t$.
-        - $W_{in}$ is the input weight matrix.
-        - $W_{res}$ is the reservoir weight matrix.
-        - $\alpha$ (leaking_rate) controls how much of the previous state influences the next state.
-        - $f$ is a nonlinear activation function.
+    where $x_t$ is the input at time step $t$, $y_t$ is the reservoir state at time $t$,
+    $W_\text{in}$ is the input weight matrix, $W_\text{res}$ is the reservoir weight matrix,
+    $\alpha$ (leaking_rate) controls how much of the previous state influences the next state,
+    and $f$ is a nonlinear activation function.
 
     Attributes:
         generator (Optional[np.random.Generator]):
@@ -183,7 +180,7 @@ class DynamicalReservoir(Reservoir):
 
         This method applies the state update equation:
 
-        $y_t = (1 - \alpha) y_{t-1} + \alpha f(W_{in} x_t + W_{res} y_{t-1})$
+        $$y_t = (1 - \alpha) y_{t-1} + \alpha f(W_\text{in} x_t + W_\text{res} y_{t-1})$$
 
         Args:
             input_state (np.ndarray):
