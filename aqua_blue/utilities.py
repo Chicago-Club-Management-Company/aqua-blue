@@ -118,7 +118,7 @@ def set_spectral(
     spectral_radius: float
         p(W) The largest absolute eigenvalue of the weight matrix. 
         Values less than 1.0 are recommended for tasks that require significant memory fading. 
-        Values between 1-1.5 are recommended for takes that are memory dependent. 
+        Values between 1-1.5 are recommended for tasks that are memory dependent. 
     """
     
     return spectral_radius/np.linalg.norm(weight_matrix, ord=2) * weight_matrix
