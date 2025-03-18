@@ -47,7 +47,7 @@ def main():
     plt.plot(prediction.times, actual_future)
     plt.xlabel('t')
     plt.plot(prediction.times, prediction.dependent_variable)
-    plt.legend(['actual_x', 'actual_y', 'predicted_x', 'predicted_y'], shadow=True)
+    plt.legend(['actual x', 'actual y', 'predicted x', 'predicted y'], shadow=True)
     plt.title('Lotka-Volterra System')
     plt.show()
 
