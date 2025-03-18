@@ -17,8 +17,9 @@ from typing import Optional, Callable, TYPE_CHECKING
 
 import numpy as np
 
-#: Type alias for activation function. Callable taking in a NumPy array and returning
-#: a NumPy array of the same shape.
+from .utilities import make_sparse, set_spectral
+
+#: Type alias for activation function. Callable taking in a numpy array, and returning a numpy array of the same shape
 ActivationFunction = Callable[[np.typing.NDArray[np.floating]], np.typing.NDArray[np.floating]]
 
 # pdoc requires a string alias for documentation, but type checkers need a true alias.
@@ -28,7 +29,7 @@ if not TYPE_CHECKING:
 
 @dataclass
 class Reservoir(ABC):
-
+    
     """
     Abstract base class defining a reservoir in an Echo State Network (ESN).
 
@@ -43,7 +44,7 @@ class Reservoir(ABC):
         res_state (np.ndarray):
             The current state of the reservoir, which is updated at each time step.
     """
-
+    
     input_dimensionality: int
     """Dimensionality of the input state."""
 
@@ -61,13 +62,6 @@ class Reservoir(ABC):
 
         This method defines the transformation applied to an input vector when passed
         through the reservoir.
-
-        Args:
-            input_state (np.ndarray):
-                The input state vector.
-
-        Returns:
-            np.ndarray: The updated reservoir state.
         """
 
         pass
@@ -75,7 +69,7 @@ class Reservoir(ABC):
 
 @dataclass
 class DynamicalReservoir(Reservoir):
-
+    
     """
     A dynamical reservoir with tunable properties.
 
@@ -107,13 +101,13 @@ class DynamicalReservoir(Reservoir):
         leaking_rate (float):
             Leaking rate that controls the contribution of the previous state.
     """
-
+    
     generator: Optional[np.random.Generator] = None
     """
     Random generator for initializing weights.
     Defaults to `np.random.default_rng(seed=0)` if not specified.
     """
-
+    
     w_in: Optional[np.typing.NDArray[np.floating]] = None
     """
     Input weight matrix.
@@ -138,6 +132,17 @@ class DynamicalReservoir(Reservoir):
     """ 
     Leaking rate (\(\alpha\)) that controls how much of the previous state contributes to the next.
     Defaults to `1.0`, meaning the state is fully updated at each time step.
+    """
+    
+    sparsity: Optional[float]=None
+    """
+    sparsity of the reservoir weight matrix. (0, 1] 
+    """
+    
+    spectral_radius: Optional[float]=None
+    """
+    spectral radius of reservoir weight matrix.
+    Recommended values - [0.9, 1.2] 
     """
 
     def __post_init__(self):
@@ -165,8 +170,13 @@ class DynamicalReservoir(Reservoir):
                 high=0.5,
                 size=(self.reservoir_dimensionality, self.reservoir_dimensionality)
             )
-            self.w_res = 0.95 * self.w_res / np.linalg.norm(self.w_res, ord=2)
-
+        
+        if self.spectral_radius:
+            self.w_res = set_spectral(self.w_res, self.spectral_radius)
+        
+        if self.sparsity:
+            self.w_res = make_sparse(self.w_res, self.sparsity, self.generator)
+        
         self.res_state = np.zeros(self.reservoir_dimensionality)
 
     def update_reservoir(self, input_state: np.typing.NDArray[np.floating]) -> np.typing.NDArray[np.floating]:
