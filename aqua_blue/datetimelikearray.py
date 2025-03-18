@@ -176,8 +176,9 @@ class DatetimeLikeArray(np.ndarray):
         replaced_arr = [dt.replace(tzinfo=None).isoformat() for dt in offset_arr]
         np.savetxt(fp, replaced_arr, fmt='%s')
 
-    @staticmethod
+    @classmethod
     def from_array(
+        cls,
         input_array: np.typing.NDArray[Union[np.number, np.datetime64]],
         tz: Union[datetime.tzinfo, None] = None
     ):
@@ -196,10 +197,10 @@ class DatetimeLikeArray(np.ndarray):
         if tz:
             array = [dt.replace(tzinfo=tz) for dt in array]
 
-        return DatetimeLikeArray(input_array=array, dtype=input_array.dtype)
+        return cls(input_array=array, dtype=input_array.dtype)
 
-    @staticmethod
-    def from_fp(fp: Union[IO, str, Path], dtype: Type, tz: Union[datetime.tzinfo, None] = None):
+    @classmethod
+    def from_fp(cls, fp: Union[IO, str, Path], dtype: Type, tz: Union[datetime.tzinfo, None] = None):
         """
         Load a text file and convert it to a DatetimeLikeArray instance.
 
@@ -213,8 +214,8 @@ class DatetimeLikeArray(np.ndarray):
         """
         if not tz:
             data = np.loadtxt(fp, dtype=dtype)
-            return DatetimeLikeArray.from_array(input_array=data)
+            return cls.from_array(input_array=data)
 
         dtype_ = 'datetime64[s]' if not dtype else dtype
         data = np.loadtxt(fp, dtype=dtype_)
-        return DatetimeLikeArray.from_array(input_array=data, tz=tz)
+        return cls.from_array(input_array=data, tz=tz)

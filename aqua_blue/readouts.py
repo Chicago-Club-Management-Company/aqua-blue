@@ -53,8 +53,11 @@ class Readout(ABC):
                 The expected output values corresponding to the input states.
         """
 
+        pass
+
     @abstractmethod
     def reservoir_to_output(self, reservoir_state: np.typing.NDArray[np.floating]) -> np.typing.NDArray[np.floating]:
+
         """
         Maps a given reservoir state to an output value.
 
@@ -65,6 +68,7 @@ class Readout(ABC):
         Returns:
             np.ndarray: The predicted output corresponding to the given reservoir state.
         """
+
         pass
 
 
@@ -101,14 +105,11 @@ class LinearReadout(Readout):
         The training process determines the optimal readout coefficients \( W^* \) by
         minimizing the error in the following equation:
 
-        \[
-        W^* = \lim_{\lambda\to 0^+} \arg\min_W \| XW - Y\|_F^2 + \lambda \|W\|_F^2
-        \]
+        $W^* = \lim_{\lambda\to 0^+} \arg\min_W \| XW - Y\|_F^2 + \lambda \|W\|_F^2$
 
         where:
-            - \( X \) is the matrix of reservoir states (independent variables).
-            - \( Y \) is the matrix of target output values (dependent variables).
-            - \( \lambda \) is the regularization parameter controlled by `rcond`.
+            - $X$ is the matrix of reservoir states (independent variables).
+            - $Y$ is the matrix of target output values (dependent variables).
 
         Args:
             independent_variables (np.ndarray):

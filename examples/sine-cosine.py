@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 
 import datetime
 from zoneinfo import ZoneInfo
@@ -13,7 +14,7 @@ def main():
 
     # Generate 10,000 datetime objects, each 1 minute apart
     t = [start_date + datetime.timedelta(minutes=i) for i in range(10000)]
-    a = np.arange(len(t))/100
+    a = np.arange(len(t)) / 100
     y = np.vstack((np.cos(a)+1, np.sin(a)-1)).T
     time_series = aqua_blue.time_series.TimeSeries(dependent_variable=y, times=t)
     normalizer = aqua_blue.utilities.Normalizer()
@@ -42,10 +43,11 @@ def main():
     print(root_mean_square_error)
     plt.plot(prediction.times, actual_future)
     plt.plot(prediction.times, prediction.dependent_variable)
-    plt.legend(['actual_x', 'actual_y', 'predicted_x', 'predicted_y'])
+    plt.legend(['actual x', 'actual y', 'predicted x', 'predicted y'])
     plt.show()
 
 
 if __name__ == "__main__":
 
+    mpl.use("TkAgg")
     main()

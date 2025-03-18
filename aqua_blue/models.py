@@ -23,7 +23,6 @@ from .datetimelikearray import DatetimeLikeArray
 import datetime
 
 
-
 @dataclass
 class Model:
     """
@@ -73,8 +72,7 @@ class Model:
     def train(
         self,
         input_time_series: TimeSeries,
-        warmup: int = 0,
-        rcond: float = 1.0e-10
+        warmup: int = 0
     ):
         """
         Trains the model on the provided time series data.
@@ -88,9 +86,6 @@ class Model:
                 The time series instance used for training.
             warmup (int):
                 The number of initial steps to ignore in training (default: 0).
-            rcond (float):
-                The threshold for pseudo-inverse computation. Increase if predictions
-                become unstable (default: `1.0e-10`).
 
         Raises:
             ValueError: If `warmup` is greater than or equal to the number of timesteps

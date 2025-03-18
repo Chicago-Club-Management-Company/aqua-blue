@@ -1,13 +1,12 @@
 __version__ = "0.2.1"
 __authors__ = [
     "Jacob Jeffries",
-    "Ameen Mahmood",
+    "Hrishikesh Belagali",
     "Avik Thumati",
+    "Ameen Mahmood",
     "Samuel Josephs",
-    "Hrishikesh Belagali"
 ]
 
-# need to change hrishi's email once there's a ccmc one for him
 __author_emails__ = [
     "jacob.jeffries@ccmc.global",
     "ameen.mahmood@ccmc.global",

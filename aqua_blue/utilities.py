@@ -81,10 +81,11 @@ class Normalizer:
         
         return TimeSeries(dependent_variable=arr, times=time_series.times)
 
+
 def make_sparse(
     weight_matrix: np.typing.NDArray[np.floating], 
     sparsity: float,
-    generator: Optional[np.random.Generator]=None
+    generator: Optional[np.random.Generator] = None
 ) -> np.typing.NDArray[np.floating]:
     """
     Make a weight matrix sparse 
@@ -107,6 +108,7 @@ def make_sparse(
     mask = generator.random(weight_matrix.shape) < sparsity 
     return weight_matrix * mask
 
+
 def set_spectral(
     weight_matrix: np.typing.NDArray[np.floating], 
     spectral_radius: float
@@ -126,4 +128,4 @@ def set_spectral(
         Values between 1-1.5 are recommended for tasks that are memory dependent. 
     """
     
-    return spectral_radius/np.linalg.norm(weight_matrix, ord=2) * weight_matrix
+    return spectral_radius / np.linalg.norm(weight_matrix, ord=2) * weight_matrix

@@ -19,7 +19,7 @@ import numpy as np
 
 from .utilities import make_sparse, set_spectral
 
-#: Type alias for activation function. Callable taking in a numpy array, and returning a numpy array of the same shape
+# Type alias for activation function. Callable taking in a numpy array, and returning a numpy array of the same shape
 ActivationFunction = Callable[[np.typing.NDArray[np.floating]], np.typing.NDArray[np.floating]]
 
 # pdoc requires a string alias for documentation, but type checkers need a true alias.
@@ -75,17 +75,15 @@ class DynamicalReservoir(Reservoir):
 
     This reservoir is defined by the equation:
 
-    \[
-    y_t = (1 - \alpha) y_{t-1} + \alpha f(W_{in} x_t + W_{res} y_{t-1})
-    \]
+    $y_t = (1 - \alpha) y_{t-1} + \alpha f(W_{in} x_t + W_{res} y_{t-1})$
 
     where:
-        - \( x_t \) is the input at time step \( t \).
-        - \( y_t \) is the reservoir state at time \( t \).
-        - \( W_{in} \) is the input weight matrix.
-        - \( W_{res} \) is the reservoir weight matrix.
-        - \( \alpha \) (leaking_rate) controls how much of the previous state influences the next state.
-        - \( f \) is a nonlinear activation function.
+        - $x_t$ is the input at time step $t$.
+        - $y_t$ is the reservoir state at time $t$.
+        - $W_{in}$ is the input weight matrix.
+        - $W_{res}$ is the reservoir weight matrix.
+        - $\alpha$ (leaking_rate) controls how much of the previous state influences the next state.
+        - $f$ is a nonlinear activation function.
 
     Attributes:
         generator (Optional[np.random.Generator]):
@@ -134,12 +132,12 @@ class DynamicalReservoir(Reservoir):
     Defaults to `1.0`, meaning the state is fully updated at each time step.
     """
     
-    sparsity: Optional[float]=None
+    sparsity: Optional[float] = None
     """
     sparsity of the reservoir weight matrix. (0, 1] 
     """
     
-    spectral_radius: Optional[float]=None
+    spectral_radius: Optional[float] = 0.95
     """
     spectral radius of reservoir weight matrix.
     Recommended values - [0.9, 1.2] 
@@ -170,12 +168,11 @@ class DynamicalReservoir(Reservoir):
                 high=0.5,
                 size=(self.reservoir_dimensionality, self.reservoir_dimensionality)
             )
-        
-        if self.spectral_radius:
-            self.w_res = set_spectral(self.w_res, self.spectral_radius)
-        
+
         if self.sparsity:
             self.w_res = make_sparse(self.w_res, self.sparsity, self.generator)
+
+        self.w_res = set_spectral(self.w_res, self.spectral_radius)
         
         self.res_state = np.zeros(self.reservoir_dimensionality)
 
@@ -186,9 +183,7 @@ class DynamicalReservoir(Reservoir):
 
         This method applies the state update equation:
 
-        \[
-        y_t = (1 - \alpha) y_{t-1} + \alpha f(W_{in} x_t + W_{res} y_{t-1})
-        \]
+        $y_t = (1 - \alpha) y_{t-1} + \alpha f(W_{in} x_t + W_{res} y_{t-1})$
 
         Args:
             input_state (np.ndarray):
@@ -201,8 +196,7 @@ class DynamicalReservoir(Reservoir):
         assert isinstance(self.w_in, np.ndarray)
         assert isinstance(self.w_res, np.ndarray)
 
-        self.res_state = (1.0 - self.leaking_rate) * self.res_state \
-                         + self.leaking_rate * self.activation_function(
+        self.res_state = (1.0 - self.leaking_rate) * self.res_state + self.leaking_rate * self.activation_function(
             self.w_in @ input_state + self.w_res @ self.res_state
         )
         return self.res_state
