@@ -1,53 +1,69 @@
 """
-Module defining readout layers for reservoir computing models.
+Module defining readout layers.
 
-This module provides an abstract `Readout` class and a concrete `LinearReadout` class,
-which map reservoir states to output states. The readout layer acts as a simple trainable
-mapping that converts high-dimensional reservoir states into predictions.
+This module provides the abstract `Readout` class and its concrete implementation,
+`LinearReadout`. Readout layers map the internal reservoir states of an Echo State
+Network (ESN) to output values.
 
-Typically, readout layers are trained using ridge regression or similar optimization techniques
-to minimize errors between predicted and actual outputs.
+Classes:
+    - Readout: Abstract base class defining the interface for readout layers.
+    - LinearReadout: A linear mapping readout layer that transforms reservoir states
+      into output values using learned coefficients.
 """
 
 from dataclasses import dataclass, field
 from abc import ABC, abstractmethod
+
 import numpy as np
 
 
 @dataclass
 class Readout(ABC):
     """
-    Abstract base class for readout layers, defining how reservoir states map to outputs.
+    Abstract base class for readout layers in Echo State Networks (ESNs).
 
-    A readout layer processes the high-dimensional reservoir state and transforms it into
-    meaningful outputs. This abstract class defines a common interface for different types of
-    readout layers.
+    Readout layers transform the high-dimensional reservoir states into output
+    predictions. The transformation is typically learned during training.
 
     Attributes:
-        coefficients (np.typing.NDArray[np.floating]):
-            The trained weight matrix defining the readout transformation.
-            This is set during training and used for making predictions.
+        coefficients (np.ndarray):
+            The learned weights for mapping reservoir states to output values.
+            This is set after training.
     """
 
     coefficients: np.typing.NDArray[np.floating] = field(init=False)
-    """The trained weight matrix defining the readout transformation. Set during training."""
+    """The learned weight matrix for the readout layer, initialized during training."""
 
     @abstractmethod
-    def reservoir_to_output(
-        self, reservoir_state: np.typing.NDArray[np.floating]
-    ) -> np.typing.NDArray[np.floating]:
+    def train(
+        self,
+        independent_variables: np.typing.NDArray[np.floating],
+        dependent_variables: np.typing.NDArray[np.floating]
+    ):
         """
-        Convert a reservoir state into an output value.
+        Trains the readout layer by learning the mapping from reservoir states to output values.
 
-        This method is implemented in subclasses to define the specific mapping
-        from reservoir states to outputs.
+        This method takes independent input variables (reservoir states) and corresponding
+        dependent variables (target outputs) to compute the optimal readout weights.
 
         Args:
-            reservoir_state (np.typing.NDArray[np.floating]):
-                The reservoir state vector to be mapped to an output.
+            independent_variables (np.ndarray):
+                The reservoir state matrix used as input for training.
+            dependent_variables (np.ndarray):
+                The expected output values corresponding to the input states.
+        """
+
+    @abstractmethod
+    def reservoir_to_output(self, reservoir_state: np.typing.NDArray[np.floating]) -> np.typing.NDArray[np.floating]:
+        """
+        Maps a given reservoir state to an output value.
+
+        Args:
+            reservoir_state (np.ndarray):
+                The current state of the reservoir.
 
         Returns:
-            np.typing.NDArray[np.floating]: The corresponding output value(s).
+            np.ndarray: The predicted output corresponding to the given reservoir state.
         """
         pass
 
@@ -55,41 +71,72 @@ class Readout(ABC):
 @dataclass
 class LinearReadout(Readout):
     """
-    Linear readout layer implementing a simple weighted transformation.
+    A linear readout layer that applies a learned linear transformation to reservoir states.
 
-    This readout layer applies a linear transformation using a trained weight matrix
-    to convert reservoir states into output values. The transformation follows the form:
+    This readout layer learns a set of coefficients during training and applies a
+    simple linear mapping to transform reservoir states into output predictions.
 
-        output = W @ reservoir_state
-
-    where `W` is the coefficient matrix learned during training.
-
-    Raises:
-        ValueError: If the readout layer is used before training (i.e., before `coefficients` is set).
+    Attributes:
+        rcond (float):
+            A regularization parameter used in the pseudo-inverse calculation to
+            prevent numerical instability in the least squares solution.
     """
 
-    def reservoir_to_output(
-        self, reservoir_state: np.typing.NDArray[np.floating]
-    ) -> np.typing.NDArray[np.floating]:
-        """
-        Apply a linear transformation to map the reservoir state to an output.
+    rcond: float = 1.0e-10
+    """
+    Regularization parameter for pseudo-inverse computation.
 
-        This function performs a simple matrix multiplication:
+    This controls the minimum singular value considered for the pseudo-inverse 
+    computation. A lower value ensures more stable training.
+    """
 
-            output = self.coefficients @ reservoir_state
+    def train(
+        self,
+        independent_variables: np.typing.NDArray[np.floating],
+        dependent_variables: np.typing.NDArray[np.floating]
+    ):
+        r"""
+        Trains the linear readout layer by solving the least-squares optimization problem.
+
+        The training process determines the optimal readout coefficients \( W^* \) by
+        minimizing the error in the following equation:
+
+        \[
+        W^* = \lim_{\lambda\to 0^+} \arg\min_W \| XW - Y\|_F^2 + \lambda \|W\|_F^2
+        \]
+
+        where:
+            - \( X \) is the matrix of reservoir states (independent variables).
+            - \( Y \) is the matrix of target output values (dependent variables).
+            - \( \lambda \) is the regularization parameter controlled by `rcond`.
 
         Args:
-            reservoir_state (np.typing.NDArray[np.floating]):
-                The input reservoir state vector.
+            independent_variables (np.ndarray):
+                The reservoir state matrix used for training.
+            dependent_variables (np.ndarray):
+                The target output values corresponding to the reservoir states.
+        """
+        coeff = np.linalg.pinv(independent_variables, rcond=self.rcond) @ dependent_variables
+        self.coefficients = coeff.T
+
+    def reservoir_to_output(self, reservoir_state: np.typing.NDArray[np.floating]) -> np.typing.NDArray[np.floating]:
+        """
+        Computes the output from a given reservoir state using a learned linear mapping.
+
+        This method applies the learned weight matrix (`self.coefficients`) to map
+        the reservoir state to an output value.
+
+        Args:
+            reservoir_state (np.ndarray):
+                The reservoir state to be mapped to an output value.
 
         Returns:
-            np.typing.NDArray[np.floating]: The corresponding output value(s).
+            np.ndarray: The predicted output value.
 
         Raises:
-            ValueError: If the readout has not been trained before use.
+            ValueError: If the readout layer has not been trained (i.e., coefficients are not set).
         """
-
         if not hasattr(self, "coefficients"):
-            raise ValueError("Readout must be trained before use.")
+            raise ValueError("Need to train readout before using it")
 
         return self.coefficients @ reservoir_state
