@@ -28,16 +28,16 @@ def main():
     )
     model.train(time_series)
 
-    prediction = model.predict(horizon=1_000)
+    horizon = 1_000
+    prediction = model.predict(horizon=horizon)
     prediction = normalizer.denormalize(prediction)
 
+    dt = np.diff(a)[0]
     actual_future = np.vstack((
-        (np.cos(np.arange(a[-1], a[-1]+10, step=0.01))+1, np.sin(np.arange(a[-1], a[-1]+10, step=0.01))-1)
+        (np.cos(a[-1] + dt * np.arange(horizon)) + 1, np.sin(a[-1] + dt * np.arange(horizon)) - 1)
     )).T
     
-    root_mean_square_error = np.sqrt(
-        np.mean((actual_future - prediction.dependent_variable) ** 2)
-    )
+    root_mean_square_error = np.sqrt(np.mean((actual_future - prediction.dependent_variable) ** 2))
     
     print(root_mean_square_error)
     plt.plot(prediction.times, actual_future)
