@@ -13,18 +13,15 @@ Classes:
 
 from dataclasses import dataclass, field
 from abc import ABC, abstractmethod
-from typing import Optional, Callable, TYPE_CHECKING
+from typing import Optional, Callable
 
 import numpy as np
 
 from .utilities import make_sparse, set_spectral
 
-# Type alias for activation function. Callable taking in a numpy array, and returning a numpy array of the same shape
-ActivationFunction = Callable[[np.typing.NDArray[np.floating]], np.typing.NDArray[np.floating]]
 
-# pdoc requires a string alias for documentation, but type checkers need a true alias.
-if not TYPE_CHECKING:
-    ActivationFunction = "ActivationFunction"
+ActivationFunction = Callable[[np.typing.NDArray[np.floating]], np.typing.NDArray[np.floating]]
+"""activation function, taking in a numpy array and returning a numpy array of the same shape"""
 
 
 @dataclass

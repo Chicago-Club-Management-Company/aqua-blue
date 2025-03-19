@@ -2,7 +2,7 @@
 Module defining the TimeSeries object
 """
 
-from typing import IO, Union
+from typing import IO, Union, Generic
 from pathlib import Path
 import warnings
 
@@ -12,7 +12,7 @@ import numpy as np
 from zoneinfo import ZoneInfo
 from datetime import datetime
 
-from .datetimelikearray import DatetimeLikeArray
+from .datetimelikearray import DatetimeLikeArray, TimeDeltaLike
 
 
 class ShapeChangedWarning(Warning):
@@ -22,7 +22,7 @@ class ShapeChangedWarning(Warning):
 
 
 @dataclass
-class TimeSeries:
+class TimeSeries(Generic[TimeDeltaLike]):
     """
     A class representing a time series, encapsulating dependent variables and corresponding timestamps.
     """
@@ -111,12 +111,12 @@ class TimeSeries:
         )
 
     @property
-    def timestep(self) -> float:
+    def timestep(self) -> TimeDeltaLike:
         """
         Returns the time step between consecutive observations.
 
         Returns:
-            float: The timestep of the time series.
+            TimeDeltaLike: The timestep of the time series.
         """
         return self.times[1] - self.times[0]
 
