@@ -2,7 +2,7 @@
 Module defining the TimeSeries object
 """
 
-from typing import IO, Union, Generic
+from typing import IO, Union, Generic, TypedDict, List
 from pathlib import Path
 import warnings
 
@@ -19,6 +19,15 @@ class ShapeChangedWarning(Warning):
     """
     Warning for cases where `TimeSeries.__post_init__` alters the shape of the dependent variable.
     """
+
+
+class TimeSeriesTypedDict(TypedDict):
+    """
+    TypedDict form of a TimeSeries object, useful for turning into json
+    """
+
+    dependent_variable: List[List[float]]
+    times: List[Union[float, str]]
 
 
 @dataclass
@@ -52,6 +61,9 @@ class TimeSeries(Generic[TimeDeltaLike]):
             raise ValueError("TimeSeries.times must be uniformly spaced")
         if np.isclose(np.mean(timesteps.astype(float)), 0.0):
             raise ValueError("TimeSeries.times must have a timestep greater than zero")
+
+        if not isinstance(self.dependent_variable, np.ndarray):
+            self.dependent_variable = np.array(self.dependent_variable)
 
         if len(self.dependent_variable.shape) == 1:
             num_steps = len(self.dependent_variable)
@@ -108,6 +120,17 @@ class TimeSeries(Generic[TimeDeltaLike]):
         return TimeSeries(
             dependent_variable=np.delete(data, obj=time_index, axis=1),
             times=DatetimeLikeArray.from_array(times_, tz)
+        )
+
+    def to_dict(self) -> TimeSeriesTypedDict:
+
+        """
+        convert to a typed dictionary
+        """
+
+        return TimeSeriesTypedDict(
+            dependent_variable=self.dependent_variable.tolist(),
+            times=self.times.to_list()
         )
 
     @property
