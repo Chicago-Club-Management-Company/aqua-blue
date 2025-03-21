@@ -2,7 +2,6 @@ from typing import Dict, Callable
 
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 import scipy
 
 import aqua_blue
@@ -45,5 +44,5 @@ def main():
 
 
 if __name__ == "__main__":
-    mpl.use("TkAgg")
+
     main()

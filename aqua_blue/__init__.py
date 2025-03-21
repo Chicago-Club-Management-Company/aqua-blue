@@ -48,6 +48,16 @@ Below is an example of generating explicit matrices for $W_\text{in}$ and $W_\te
 ```py
 .. include:: ../examples/explicit-weights.py
 ```
+
+## 📈 Explicit activation function
+
+Below is an example of using a different activation function to map from the input state to the reservoir.
+Here, we use both hyperbolic tangent (`tanh`) and the [error function](https://en.wikipedia.org/wiki/Error_function)
+(`erf`), and compare the results.
+
+```py
+.. include:: ../examples/activation-functions.py
+```
 """
 
 __version__ = "0.2.9"
