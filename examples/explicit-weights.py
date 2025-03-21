@@ -1,16 +1,17 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 
 import aqua_blue
 
 
 def main():
-    t = np.arange(10_000) / 100
+    t = np.arange(5_000) / 100
     y = np.vstack((np.cos(t) ** 2, np.sin(t))).T
 
     time_series = aqua_blue.time_series.TimeSeries(dependent_variable=y, times=t)
     normalizer = aqua_blue.utilities.Normalizer()
-    time_series = normalizer.normalize(time_series)
+    normalized_time_series = normalizer.normalize(time_series)
     generator = np.random.default_rng(seed=0)
 
     w_res = generator.uniform(
@@ -35,20 +36,29 @@ def main():
         ),
         readout=aqua_blue.readouts.LinearReadout()
     )
-    model.train(time_series)
+    model.train(normalized_time_series)
 
-    prediction = model.predict(horizon=1_000)
+    horizon = 1_000
+    prediction = model.predict(horizon=horizon)
     prediction = normalizer.denormalize(prediction)
 
-    actual_future = np.vstack((np.cos(prediction.times) ** 2, np.sin(prediction.times))).T
+    actual_future = aqua_blue.time_series.TimeSeries(
+        dependent_variable=np.vstack((np.cos(prediction.times) ** 2, np.sin(prediction.times))).T,
+        times=prediction.times
+    )
 
-    plt.plot(prediction.times, actual_future)
-    plt.plot(prediction.times, prediction.dependent_variable)
-    plt.legend(['actual x', 'actual y', 'predicted x', 'predicted y'])
+    ground_truth = time_series >> actual_future
+    predicted = time_series >> prediction
+
+    plt.plot(ground_truth.times, ground_truth.dependent_variable)
+    plt.plot(predicted.times, predicted.dependent_variable)
+    plt.axvline(time_series.times[-1], color="black", linestyle="--")
+    plt.legend(['actual x', 'actual y', 'predicted x', 'predicted y', 'knowledge horizon'])
     plt.title("Explicit Weight Matrix Example")
 
     plt.show()
 
 
 if __name__ == "__main__":
+    mpl.use("TkAgg")
     main()

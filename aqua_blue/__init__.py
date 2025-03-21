@@ -43,7 +43,8 @@ prediction. This is particularly useful for interfacing `aqua-blue` with already
 
 Below is an example of generating explicit matrices for $W_\text{in}$ and $W_\text{res}$. Here, `sparsity=0.99` and
 `spectral_radius=1.2` respectively zero-out $99\%$ of $W_\text{res}$'s elements and force $W_\text{res}$ to have a
-[spectral radius](https://en.wikipedia.org/wiki/Spectral_radius) of $1.2$.
+[spectral radius](https://en.wikipedia.org/wiki/Spectral_radius) of $1.2$. We also showcase the `>>` operator, which
+concatenates instances of `aqua_blue.time_series.TimeSeries`.
 
 ```py
 .. include:: ../examples/explicit-weights.py
