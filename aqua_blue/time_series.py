@@ -2,7 +2,7 @@
 Module defining the TimeSeries object
 """
 
-from typing import IO, Union
+from typing import IO, Union, Generic, TypedDict, Sequence
 from pathlib import Path
 import warnings
 
@@ -12,7 +12,7 @@ import numpy as np
 from zoneinfo import ZoneInfo
 from datetime import datetime
 
-from .datetimelikearray import DatetimeLikeArray
+from .datetimelikearray import DatetimeLikeArray, TimeDeltaLike
 
 
 class ShapeChangedWarning(Warning):
@@ -21,8 +21,17 @@ class ShapeChangedWarning(Warning):
     """
 
 
+class TimeSeriesTypedDict(TypedDict):
+    """
+    TypedDict form of a TimeSeries object, useful for turning into json
+    """
+
+    dependent_variable: Sequence[Sequence[float]]
+    times: Sequence[Union[float, str]]
+
+
 @dataclass
-class TimeSeries:
+class TimeSeries(Generic[TimeDeltaLike]):
     """
     A class representing a time series, encapsulating dependent variables and corresponding timestamps.
     """
@@ -52,6 +61,9 @@ class TimeSeries:
             raise ValueError("TimeSeries.times must be uniformly spaced")
         if np.isclose(np.mean(timesteps.astype(float)), 0.0):
             raise ValueError("TimeSeries.times must have a timestep greater than zero")
+
+        if not isinstance(self.dependent_variable, np.ndarray):
+            self.dependent_variable = np.array(self.dependent_variable)
 
         if len(self.dependent_variable.shape) == 1:
             num_steps = len(self.dependent_variable)
@@ -110,13 +122,24 @@ class TimeSeries:
             times=DatetimeLikeArray.from_array(times_, tz)
         )
 
+    def to_dict(self) -> TimeSeriesTypedDict:
+
+        """
+        convert to a typed dictionary
+        """
+
+        return TimeSeriesTypedDict(
+            dependent_variable=self.dependent_variable.tolist(),
+            times=self.times.to_list()
+        )
+
     @property
-    def timestep(self) -> float:
+    def timestep(self) -> TimeDeltaLike:
         """
         Returns the time step between consecutive observations.
 
         Returns:
-            float: The timestep of the time series.
+            TimeDeltaLike: The timestep of the time series.
         """
         return self.times[1] - self.times[0]
 

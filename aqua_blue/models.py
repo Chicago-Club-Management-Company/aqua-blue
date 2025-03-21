@@ -11,20 +11,20 @@ Classes:
 """
 
 from dataclasses import dataclass, field
-from typing import Union
+from typing import Union, Generic
 
 import numpy as np
 
 from .reservoirs import Reservoir
 from .readouts import Readout
 from .time_series import TimeSeries
-from .datetimelikearray import DatetimeLikeArray
+from .datetimelikearray import DatetimeLikeArray, DatetimeLike, TimeDeltaLike
 
 import datetime
 
 
 @dataclass
-class Model:
+class Model(Generic[DatetimeLike, TimeDeltaLike]):
     """
     A machine learning model that integrates a reservoir with a readout layer for
     time series forecasting.
@@ -57,10 +57,10 @@ class Model:
     readout: Readout
     """The readout component that defines the reservoir-to-output mapping."""
 
-    final_time: float = field(init=False)
+    final_time: DatetimeLike = field(init=False)
     """The final timestamp encountered in the training dataset (set during training)."""
 
-    timestep: float = field(init=False)
+    timestep: TimeDeltaLike = field(init=False)
     """The fixed time step interval of the training dataset (set during training)."""
 
     initial_guess: np.typing.NDArray[np.floating] = field(init=False)
@@ -138,6 +138,15 @@ class Model:
             predictions[i, :] = self.readout.reservoir_to_output(
                 self.reservoir.update_reservoir(predictions[i-1, :])
             )
+
+        if isinstance(self.final_time, float):
+            assert isinstance(self.timestep, float)
+
+        if isinstance(self.final_time, datetime.datetime):
+            assert isinstance(self.timestep, datetime.timedelta)
+
+        if isinstance(self.final_time, np.datetime64):
+            assert isinstance(self.timestep, np.timedelta64)
 
         times_ = DatetimeLikeArray.from_array(
             np.arange(

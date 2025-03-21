@@ -102,8 +102,8 @@ class LinearReadout(Readout):
         r"""
         Trains the linear readout layer by solving the least-squares optimization problem.
 
-        The training process determines the optimal readout coefficients \( W^* \) by
-        minimizing the error in the following equation:
+        The training process determines the optimal readout coefficients $W^*$ by solving the optimization problem
+        below:
 
         $$W^* = \lim_{\lambda\to 0^+} \arg\min_W \| XW - Y\|_F^2 + \lambda \|W\|_F^2$$
 

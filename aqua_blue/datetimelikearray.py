@@ -18,8 +18,12 @@ from typing import List, IO, Union, TypeVar, Type, Sequence
 from zoneinfo import ZoneInfo
 import datetime
 
-# Type checking
+
 DatetimeLike = TypeVar("DatetimeLike", float, datetime.datetime, np.datetime64)
+"""Datetime like, representing either dates or numerical values"""
+
+TimeDeltaLike = TypeVar("TimeDeltaLike", float, datetime.timedelta, np.timedelta64)
+"""Corresponding object representing timesteps, which are either float if the two times are floats, or a timedelta"""
 
 
 class DatetimeLikeArray(np.ndarray):
