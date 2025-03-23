@@ -106,11 +106,13 @@ class TimeSeries(Generic[TimeDeltaLike]):
 
     @classmethod
     def from_csv(cls, fp: Union[IO, str, Path], times_dtype, tz: Union[ZoneInfo, None] = None, time_index: int = 0):
+    def from_csv(cls, fp: Union[IO, str, Path], times_dtype, tz: Union[ZoneInfo, None] = None, time_index: int = 0):
         """
         Loads time series data from a CSV file.
 
         Args:
             fp (Union[IO, str, Path]): File path or object to read from.
+            times_dtype (dtype): Type of times column.
             times_dtype (dtype): Type of times column.
             time_index (int, optional): Column index corresponding to time values. Defaults to 0.
             tz (ZoneInfo, optional): Timezone to apply to the time data. Defaults to None.
