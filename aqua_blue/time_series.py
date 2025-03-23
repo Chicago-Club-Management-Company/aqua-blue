@@ -12,7 +12,7 @@ import numpy as np
 
 from zoneinfo import ZoneInfo
 from datetime import datetime
-from dateutil import parser
+from dateutil import parser # type: ignore
 
 from .datetimelikearray import DatetimeLikeArray, TimeDeltaLike
 
