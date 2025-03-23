@@ -11,6 +11,7 @@ import numpy as np
 
 from zoneinfo import ZoneInfo
 from datetime import datetime
+from dateutil import parser
 
 from .datetimelikearray import DatetimeLikeArray, TimeDeltaLike
 
@@ -103,23 +104,37 @@ class TimeSeries(Generic[TimeDeltaLike]):
         return self.dependent_variable.shape[1]
 
     @classmethod
-    def from_csv(cls, fp: Union[IO, str, Path], tz: Union[ZoneInfo, None] = None, time_index: int = 0):
+    def from_csv(cls, fp: Union[IO, str, Path], times_dtype, tz: Union[ZoneInfo, None] = None, time_index: int = 0):
         """
         Loads time series data from a CSV file.
 
         Args:
             fp (Union[IO, str, Path]): File path or object to read from.
+            times_dtype (dtype): Type of times column.
             time_index (int, optional): Column index corresponding to time values. Defaults to 0.
             tz (ZoneInfo, optional): Timezone to apply to the time data. Defaults to None.
 
         Returns:
             TimeSeries: A TimeSeries instance populated by data from the csv file.
         """
-        data = np.loadtxt(fp, delimiter=",")
-        times_ = data[:, time_index]
+        
+        # Get the number of columns
+        data = np.genfromtxt(fp, delimiter=",", dtype=None)
+        cols = data.dtype.names
+        
+        # # Take out the times data from genfromtxt call 
+        times_ = data[:][cols[time_index]]
+        
+        # Get the dependent variables 
+        var_indices = [i for i in range(0, len(cols)) if i != time_index] 
+        dependent = np.loadtxt(fp, delimiter=',', usecols=var_indices)
+        
+        if isinstance(times_[0], str):
+            times_ = [parser.parse(i).replace(tzinfo=tz) for i in times_]
+        
         return TimeSeries(
-            dependent_variable=np.delete(data, obj=time_index, axis=1),
-            times=DatetimeLikeArray.from_array(times_, tz)
+            dependent_variable=dependent,
+            times=DatetimeLikeArray(times_, dtype=times_dtype)
         )
 
     def to_dict(self) -> TimeSeriesTypedDict:
