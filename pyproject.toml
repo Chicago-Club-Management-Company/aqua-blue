@@ -29,7 +29,8 @@ classifiers = [
 dependencies = [
     "numpy ~= 2.0.2",
     "tzdata~=2025.1",
-    "python-dateutil~=2.9.0.post0"
+    "python-dateutil~=2.9.0.post0",
+    "types-python-dateutil~=2.9.0.20241206"
 ]
 
 [project.urls]

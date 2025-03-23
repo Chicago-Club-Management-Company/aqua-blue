@@ -12,7 +12,7 @@ import numpy as np
 
 from zoneinfo import ZoneInfo
 from datetime import datetime
-from dateutil import parser # type: ignore
+from dateutil import parser
 
 from .datetimelikearray import DatetimeLikeArray, TimeDeltaLike
 
@@ -105,7 +105,6 @@ class TimeSeries(Generic[TimeDeltaLike]):
         return self.dependent_variable.shape[1]
 
     @classmethod
-    def from_csv(cls, fp: Union[IO, str, Path], times_dtype, tz: Union[ZoneInfo, None] = None, time_index: int = 0):
     def from_csv(cls, fp: Union[IO, str, Path], times_dtype, tz: Union[ZoneInfo, None] = None, time_index: int = 0):
         """
         Loads time series data from a CSV file.
