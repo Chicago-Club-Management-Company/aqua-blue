@@ -54,7 +54,7 @@ def test_can_save_and_load_time_series():
     with BytesIO() as buffer:
         t_original.save(buffer)
         buffer.seek(0)
-        t_loaded = time_series.TimeSeries.from_csv(buffer)
+        t_loaded = time_series.TimeSeries.from_csv(buffer, times_dtype=float)
     
     assert t_original == t_loaded
 
