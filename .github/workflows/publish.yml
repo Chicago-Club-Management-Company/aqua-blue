@@ -140,9 +140,9 @@ jobs:
         run: >-
           pdoc -d google aqua_blue/ -o _build --math --logo "https://raw.githubusercontent.com/Chicago-Club-Management-Company/aqua-blue/refs/heads/main/assets/blue.jpg" --favicon "https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/1f30a.png"
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: pdoc-docs
+          name: github-pages
           path: _build/
 
   deploy-docs:
@@ -150,9 +150,12 @@ jobs:
       - create-docs
     runs-on: ubuntu-latest
     permissions:
-      contents: write
       pages: write
       id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
       - name: Checkout repository
@@ -161,16 +164,12 @@ jobs:
       - name: Download docs artifact
         uses: actions/download-artifact@v4
         with:
-          name: pdoc-docs
+          name: github-pages
           path: _build/
 
-      # deploy here, to github pages for now
-      - name: Deploy documentation
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          branch: gh-pages
-          folder: _build
-          clean: true
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
 
   pypi-publish:
     needs:
