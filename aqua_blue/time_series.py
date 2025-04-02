@@ -2,10 +2,13 @@
 Module defining the TimeSeries object
 """
 
-from typing import IO, Union, Generic, TypedDict, Sequence, List
+from typing import IO, Union, Generic, TypedDict, Sequence, List, Callable, Type, Optional
 from pathlib import Path
 import warnings
+
 import io 
+import csv
+import os 
 
 from dataclasses import dataclass
 import numpy as np
@@ -16,6 +19,13 @@ from dateutil import parser
 
 from .datetimelikearray import DatetimeLikeArray, TimeDeltaLike
 
+# Default times_conversion function
+def parse_time(s: str) -> Union[float, datetime]:
+    try: 
+        n = float(s)
+        return n
+    except ValueError:
+        return parser.parse(s)
 
 class ShapeChangedWarning(Warning):
     """
@@ -103,53 +113,66 @@ class TimeSeries(Generic[TimeDeltaLike]):
             int: Number of dimensions of the time series.
         """
         return self.dependent_variable.shape[1]
-
+    
     @classmethod
-    def from_csv(cls, fp: Union[IO, str, Path], times_dtype, tz: Union[ZoneInfo, None] = None, time_index: int = 0):
+    def from_csv(
+        cls, 
+        fp: Union[IO, str, Path, str], 
+        time_col: str,
+        times_dtype: Type,
+        dependent_var_cols: List[str],
+        tz: Optional[ZoneInfo] = None, 
+        times_conversion: Callable[[str], float] = parse_time, 
+        dep_var_conversion: Callable[[str], float] = float,
+        max_rows: int = 0
+        ):
         """
         Loads time series data from a CSV file.
-
+        
         Args:
             fp (Union[IO, str, Path]): File path or object to read from.
-            times_dtype (dtype): Type of times column.
-            times_dtype (dtype): Type of times column.
-            time_index (int, optional): Column index corresponding to time values. Defaults to 0.
-            tz (ZoneInfo, optional): Timezone to apply to the time data. Defaults to None.
-
+            time_col (str): Name of the times column.
+            times_dtype (dtype): Type of the times column
+            dependent_var_cols (List[str]): Names of the dependent variable columns
+            times_conversion (Callable[[str], float]): Function determining how to parse elements of the times column. Defaults to parse_time
+            dep_var_conversion (Callable[[str], float]): Function determining how to parse elements of the dependent variable columns. Defaults to float
+            max_rows (float): Maximum number of rows that should be parsed. If set to zero, all rows are parsed. Defaults to 0
+        
         Returns:
             TimeSeries: A TimeSeries instance populated by data from the csv file.
         """
         
-        # Get the number of columns
-        data = np.genfromtxt(fp, delimiter=",", dtype=None)
+        reader = None
         
-        cols : List[Union[int, str]]
+        if os.path.isfile(fp):
+            with open(fp, encoding='utf-8') as file: 
+                reader = list(csv.DictReader(file, delimiter=","))
 
-        if isinstance(data[0], np.void) and data.dtype.names: 
-            cols = list(data.dtype.names) 
-            times_ = data[:][cols[time_index]]
-        else: 
-            cols = [i for i in range(data.shape[1])]
-            times_ = data[:, time_index]
+        if isinstance(fp, io.BytesIO):
+            reader = list(csv.DictReader(fp.read().decode('utf-8').splitlines(), delimiter=","))
         
-        if isinstance(fp, io.IOBase):
-            fp.seek(0)
+        if isinstance(fp, io.StringIO):
+            reader = list(csv.DictReader(fp, delimiter=","))
+
+        if not reader:
+            raise ValueError("Invalid input format!")
         
-        # Get the dependent variables 
-        var_indices = [i for i in range(0, len(cols)) if i != time_index] 
-        dependent = np.loadtxt(fp, delimiter=',', usecols=var_indices)
-        
-        if isinstance(times_[0], str):
-            datetimes_ : List[datetime] = [parser.parse(i).replace(tzinfo=tz) for i in times_]
-        
-            return TimeSeries(
-                dependent_variable=dependent,
-                times=DatetimeLikeArray(datetimes_, dtype=times_dtype)
-            )
-        
-        return TimeSeries(
-            dependent_variable=dependent,
-            times=DatetimeLikeArray.from_array(times_)
+        times_ = []
+        dependent_variables_ = []
+        for i, row in enumerate(reader):
+            
+            if max_rows and i >= max_rows:
+                break
+            times_.append(times_conversion(row[time_col]))
+            
+            dep_var = []
+            for col in dependent_var_cols:
+                dep_var.append(dep_var_conversion(row[col]))
+            dependent_variables_.append(dep_var)
+    
+        return cls(
+            dependent_variable=np.array(dependent_variables_), 
+            times=DatetimeLikeArray(times_, dtype=times_dtype)
         )
 
     def to_dict(self) -> TimeSeriesTypedDict:
