@@ -200,6 +200,7 @@ class TimeSeries(Generic[TimeDeltaLike]):
         """
         Checks equality between two TimeSeries instances.
         
+        
         Returns:
             bool: True if both instances have the same times and dependent variables.
         """
@@ -236,6 +237,7 @@ class TimeSeries(Generic[TimeDeltaLike]):
             dependent_variable=self.dependent_variable + other.dependent_variable,
             times=self.times
         )
+    
     
     def __sub__(self, other):
         """
