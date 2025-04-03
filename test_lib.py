@@ -239,6 +239,53 @@ def datetime_series():
         times=times_
     )
 
+def from_iter_float():
+    def gen(): 
+        a = 0
+        while a < 10: 
+            yield a
+            a +=1
+    
+    ts = datetimelikearray.DatetimeLikeArray.from_iter(gen, float)
+    
+    assert(ts == np.arange(10))
+
+def from_iter_naive(): 
+    time_init = datetime(
+        year=2025,
+        month=3,
+        day=1,
+        hour=12,
+        tzinfo=ZoneInfo("UTC")
+    )
+    
+    def gen(): 
+        i = 0 
+        while i < 10: 
+            yield time_init + timedelta(seconds=3600*i)
+            i += 1
+    
+    ts = datetimelikearray.DatetimeLikeArray.from_iter(gen, 'datetime64[s]')
+    assert(ts == list(gen()))
+
+def from_iter_aware():
+    time_init = datetime(
+        year=2025,
+        month=3,
+        day=1,
+        hour=12,
+        tzinfo=ZoneInfo("America/Chicago")
+    )
+    
+    def gen(): 
+        i = 0 
+        while i < 10: 
+            yield time_init + timedelta(seconds=3600*i)
+            i += 1
+    
+    ts = datetimelikearray.DatetimeLikeArray.from_iter(gen, 'datetime64[s]', tz=ZoneInfo("America/Chicago"))
+    assert(ts.to_list() == list(gen()))
+
 def csv_from_string_io():
     # grab csv data from somewhere online
     req = requests.get("https://www.ncei.noaa.gov/data/global-summary-of-the-day/access/2024/01001099999.csv")
