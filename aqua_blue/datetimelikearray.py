@@ -13,7 +13,7 @@ from pathlib import Path
 
 import numpy as np
 
-from typing import List, IO, Union, TypeVar, Type, Sequence, Iterable, Optional
+from typing import List, IO, Union, TypeVar, Type, Sequence, Generator, Optional
 
 from zoneinfo import ZoneInfo
 import datetime
@@ -223,15 +223,15 @@ class DatetimeLikeArray(np.ndarray):
         dtype_ = 'datetime64[s]' if not dtype else dtype
         data = np.loadtxt(fp, dtype=dtype_)
         return cls.from_array(input_array=data, tz=tz)
-
+    
     @classmethod 
-    def from_iter(cls, gen: Iterable[DatetimeLike], dtype: Type, tz: Optional[datetime.tzinfo] = None):
+    def from_iter(cls, gen: Generator[DatetimeLike, None, None], dtype: Type, tz: Optional[datetime.tzinfo] = None):
         """
         
         Create a DatetimeLikeArray object from an Iterable with DatetimeLike yields
 
         Args:
-            gen (Iterable[DatetimeLike]): An iterable that yields DatetimeLike values
+            gen (Generator[DatetimeLike, None, None]): A generator that yields DatetimeLike values
             dtype (Type): Data type of the values in the file.
             tz (datetime.tzinfo, optional): Timezone to assign to the loaded data.
         
@@ -239,14 +239,13 @@ class DatetimeLikeArray(np.ndarray):
             DatetimeLikeArray: A new instance with timezone awareness.
         """
 
-        def wrapper_gen(gen: Iterable[DatetimeLike]) -> Iterable[DatetimeLike]: 
-
+        def wrapper_gen(gen): 
+            
             for value in gen(): 
                 
                 # If it is timezone-aware, remove the timezone
                 if isinstance(value, datetime.datetime): 
                     a = value.replace(tzinfo=None)
-                    
                     yield a
                 
                 else: 
