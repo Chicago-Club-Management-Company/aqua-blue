@@ -42,7 +42,8 @@ dev = [
     "ruff~=0.9.4",
     "mypy~=1.13.0",
     "pdoc~=15.0.1",
-    "types-python-dateutil~=2.9.0.20241206"
+    "types-python-dateutil~=2.9.0.20241206",
+    "requests~=2.32.3"
 ]
 examples = [
     "scipy~=1.13.1", 
