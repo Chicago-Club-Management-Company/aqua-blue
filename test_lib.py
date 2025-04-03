@@ -1,4 +1,4 @@
-from io import BytesIO
+from io import BytesIO, StringIO
 from copy import deepcopy
 from datetime import datetime, timedelta
 
@@ -6,9 +6,12 @@ import pytest
 import numpy as np
 
 from zoneinfo import ZoneInfo
+import requests
 
 from aqua_blue import time_series, utilities, reservoirs, readouts, models, datetimelikearray
 
+
+# Fixtures
 
 @pytest.fixture
 def cosine_sine_series():
@@ -36,6 +39,7 @@ def datetime_arr():
 
     return times_ 
 
+# TimeSeries
 def test_non_uniform_timestep_error():
     
     with pytest.raises(ValueError):
@@ -52,9 +56,14 @@ def test_can_save_and_load_time_series():
     
     t_original = time_series.TimeSeries(dependent_variable=np.ones(shape=(10, 2)), times=np.arange(10))
     with BytesIO() as buffer:
-        t_original.save(buffer)
+        t_original.save(buffer, header="TIMES,COL1,COL2")
         buffer.seek(0)
-        t_loaded = time_series.TimeSeries.from_csv(buffer, times_dtype=float)
+        t_loaded = time_series.TimeSeries.from_csv(
+            fp=buffer,
+            times_dtype=float,
+            time_col="TIMES",
+            dependent_var_cols=["COL1", "COL2"]
+        )
     
     assert t_original == t_loaded
 
@@ -229,3 +238,53 @@ def datetime_series():
         dependent_variable=dependent_variables, 
         times=times_
     )
+
+def csv_from_string_io():
+    # grab csv data from somewhere online
+    req = requests.get("https://www.ncei.noaa.gov/data/global-summary-of-the-day/access/2024/01001099999.csv")
+    
+    # time col probably better referenced by name
+    # timesteps aren't uniform after row 87
+    time_col = "DATE"
+    dependent_var_cols = ["TEMP", "WDSP"]
+    max_rows = 87
+    
+    
+    # write txt response to StringIO object so we can use it like an fp
+    with StringIO() as file:
+        txt = req.text
+        file.write(txt)
+        file.seek(0)
+    
+        ts = time_series.TimeSeries.from_csv(
+            fp=file,
+            time_col=time_col,
+            dependent_var_cols=dependent_var_cols,
+            times_dtype='datetime64[s]',
+            max_rows=87,
+        )
+
+def csv_from_bytesio():
+    # grab csv data from somewhere online
+    req = requests.get("https://www.ncei.noaa.gov/data/global-summary-of-the-day/access/2024/01001099999.csv")
+    
+    # time col probably better referenced by name
+    # timesteps aren't uniform after row 87
+    time_col = "DATE"
+    dependent_var_cols = ["TEMP", "WDSP"]
+    max_rows = 87
+    
+    
+    # write txt response to StringIO object so we can use it like an fp
+    with BytesIO() as file:
+        txt = req.text
+        file.write(txt)
+        file.seek(0)
+    
+        ts = time_series.TimeSeries.from_csv(
+            fp=file,
+            time_col=time_col,
+            dependent_var_cols=dependent_var_cols,
+            times_dtype='datetime64[s]',
+            max_rows=87,
+        )

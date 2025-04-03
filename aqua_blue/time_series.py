@@ -2,7 +2,7 @@
 Module defining the TimeSeries object
 """
 
-from typing import IO, Union, Generic, TypedDict, Sequence, List, Callable, Type
+from typing import IO, Union, Generic, TypedDict, Sequence, List, Callable, Type, Optional, Iterable, Dict
 from pathlib import Path
 import warnings
 
@@ -52,7 +52,7 @@ class TimeSeries(Generic[TimeDeltaLike]):
 
     times: DatetimeLikeArray
     """Array of time values associated with the dependent variable."""
-
+    
     def __post_init__(self):
         """
         Ensures proper formatting of time values and checks for uniform spacing.
@@ -64,18 +64,18 @@ class TimeSeries(Generic[TimeDeltaLike]):
             dtype_ = 'datetime64[s]'
         else:
             dtype_ = np.dtype(type(self.times[0]))
-
+        
         self.times = DatetimeLikeArray(self.times, dtype=dtype_)
         timesteps = np.diff(self.times)
-
+        
         if not np.isclose(np.std(timesteps.astype(float)), 0.0):
             raise ValueError("TimeSeries.times must be uniformly spaced")
         if np.isclose(np.mean(timesteps.astype(float)), 0.0):
             raise ValueError("TimeSeries.times must have a timestep greater than zero")
-
+        
         if not isinstance(self.dependent_variable, np.ndarray):
             self.dependent_variable = np.array(self.dependent_variable)
-
+        
         if len(self.dependent_variable.shape) == 1:
             num_steps = len(self.dependent_variable)
             self.dependent_variable = self.dependent_variable.reshape(num_steps, 1)
@@ -83,18 +83,18 @@ class TimeSeries(Generic[TimeDeltaLike]):
                 f"TimeSeries.dependent_variable should have shape (number of steps, dimensionality). "
                 f"The shape has been changed from {(num_steps,)} to {self.dependent_variable.shape}",
             )
-
+    
     def save(self, fp: Union[IO, str, Path], header: str = "", delimiter=","):
         """
         Saves the time series data to a file.
-
+        
         Args:
             fp (Union[IO, str, Path]): File path or object where the TimeSeries instance will be saved.
             header (str, optional): An optional header. Defaults to an empty string.
             delimiter (str, optional): The delimiter used in the output file. Defaults to a comma.
         """
         # This should work just fine as long as we are writing datetime objects in UTC.
-
+        
         np.savetxt(
             fp,
             np.vstack((self.times, self.dependent_variable.T)).T,
@@ -102,12 +102,12 @@ class TimeSeries(Generic[TimeDeltaLike]):
             header=header,
             comments=""
         )
-
+    
     @property
     def num_dims(self) -> int:
         """
         Returns the dimensionality of the dependent variable.
-
+        
         Returns:
             int: Number of dimensions of the time series.
         """
@@ -122,7 +122,7 @@ class TimeSeries(Generic[TimeDeltaLike]):
         dependent_var_cols: List[str],
         times_conversion: Callable[[str], DatetimeLike] = parse_time, 
         dep_var_conversion: Callable[[str], float] = float,
-        max_rows: int = 0
+        max_rows: Optional[int] = 0
         ):
         """
         Loads time series data from a CSV file.
@@ -139,53 +139,42 @@ class TimeSeries(Generic[TimeDeltaLike]):
         Returns:
             TimeSeries: A TimeSeries instance populated by data from the csv file.
         """
-        # Helper function to get a csv.DictReader source from different sources
-        def get_reader(fp) -> csv.DictReader:
+        # Helper generator to get a csv.DictReader source from different sources
+        def get_reader(fp) -> Iterable[Dict]:
             
-            reader = None 
-
             # Checking the input format
             if isinstance(fp, Path) and os.path.isfile(fp):
-                with open(fp, encoding='utf-8') as file: 
-                    reader = csv.DictReader(file, delimiter=",")
+                with open(fp, encoding='utf-8') as file:
+                    yield from csv.DictReader(file, delimiter=",")
         
             if isinstance(fp, io.BytesIO):
                 fp.seek(0)
-                reader = csv.DictReader(fp.read().decode('utf-8').splitlines(), delimiter=",")
+                yield from csv.DictReader(io.TextIOWrapper(fp, encoding='utf-8'), delimiter=",")
             
             if isinstance(fp, io.StringIO):
                 fp.seek(0)
-                reader = csv.DictReader(fp, delimiter=",")
-            
-            if not reader:
-                raise ValueError("Invalid input format!")
-            
-            return reader
-        
+                yield from csv.DictReader(fp, delimiter=",")
+    
         # Processing the csv data
-        reader = get_reader(fp)
         times_ = []
         
         # Generator for lazy dependent variable processing
-        def dep_gen(): 
+        def process(): 
+            reader = get_reader(fp)
             for i, row in enumerate(reader):
                 if max_rows and i >= max_rows:
                     break
+                times_.append(times_conversion(row[time_col]))
                 for col in dependent_var_cols: 
-                     yield dep_var_conversion(row[col])
-        
-        for i, row in enumerate(reader):
-            if max_rows and i >= max_rows:
-                break
-            times_.append(times_conversion(row[time_col]))
+                     yield dep_var_conversion(row[col]) 
         
         return cls(
-            dependent_variable=np.fromiter(dep_gen(), dtype=float).reshape(-1, len(dependent_var_cols)), 
+            dependent_variable=np.fromiter(process(), dtype=float).reshape(-1, len(dependent_var_cols), order='C'), 
             times=DatetimeLikeArray(times_, dtype=times_dtype)
         )
     
     def to_dict(self) -> TimeSeriesTypedDict:
-
+        
         """
         convert to a typed dictionary
         """
