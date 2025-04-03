@@ -13,7 +13,7 @@ from pathlib import Path
 
 import numpy as np
 
-from typing import List, IO, Union, TypeVar, Type, Sequence
+from typing import List, IO, Union, TypeVar, Type, Sequence, Iterable, Optional
 
 from zoneinfo import ZoneInfo
 import datetime
@@ -35,7 +35,7 @@ class DatetimeLikeArray(np.ndarray):
     back to the specified timezone when accessed.
     """
 
-    tz: Union[datetime.tzinfo, None] = None
+    tz: Optional[datetime.tzinfo] = None
     """The timezone associated with the array. Defaults to None (assumed UTC)."""
 
     tz_offset: Union[datetime.timedelta, None] = None
@@ -83,16 +83,16 @@ class DatetimeLikeArray(np.ndarray):
         tz_offset_ = datetime.datetime.now(tz_).utcoffset()
         seconds_offset = tz_offset_.total_seconds() if tz_offset_ else 0
         np_offset = np.timedelta64(int(np.abs(seconds_offset)), 's')
-
+        
         if seconds_offset < 0:
             datetime64_array += np_offset
         else:
             datetime64_array -= np_offset
-
+        
         # Initialize an NDArray and populate with the datetime values
         obj = super().__new__(cls, datetime64_array.shape, dtype, buffer, offset, strides, order)
         obj[:] = datetime64_array
-
+        
         # Set the timezone and offset of the array
         obj.tz = tz_
         obj.tz_offset = tz_offset_ if tz_offset_ else datetime.timedelta(0)
@@ -151,8 +151,8 @@ class DatetimeLikeArray(np.ndarray):
         converted_arr = [dt.replace(tzinfo=self.tz) for dt in list_arr]
 
         return converted_arr
-
-    def to_file(self, fp: Union[IO, str, Path], tz: Union[datetime.tzinfo, None] = None):
+    
+    def to_file(self, fp: Union[IO, str, Path], tz: Optional[datetime.tzinfo] = None):
         """
         Save a DatetimeLikeArray instance to a text file.
 
@@ -184,11 +184,11 @@ class DatetimeLikeArray(np.ndarray):
     def from_array(
         cls,
         input_array: np.typing.NDArray[Union[np.number, np.datetime64]],
-        tz: Union[datetime.tzinfo, None] = None
+        tz: Optional[datetime.tzinfo] = None
     ):
         """
         Convert a numpy array to a DatetimeLikeArray instance.
-
+        
         Args:
             input_array (np.ndarray): NumPy array containing datetime values.
             tz (datetime.tzinfo, optional): Timezone of the input datetime values.
@@ -204,7 +204,7 @@ class DatetimeLikeArray(np.ndarray):
         return cls(input_array=array, dtype=input_array.dtype)
 
     @classmethod
-    def from_fp(cls, fp: Union[IO, str, Path], dtype: Type, tz: Union[datetime.tzinfo, None] = None):
+    def from_fp(cls, fp: Union[IO, str, Path], dtype: Type, tz: Optional[datetime.tzinfo] = None):
         """
         Load a text file and convert it to a DatetimeLikeArray instance.
 
@@ -212,7 +212,7 @@ class DatetimeLikeArray(np.ndarray):
             fp (Union[IO, str, Path]): File path or file-like object to read from.
             dtype (Type): Data type of the values in the file.
             tz (datetime.tzinfo, optional): Timezone to assign to the loaded data.
-
+        
         Returns:
             DatetimeLikeArray: A new instance with timezone awareness.
         """
@@ -223,3 +223,56 @@ class DatetimeLikeArray(np.ndarray):
         dtype_ = 'datetime64[s]' if not dtype else dtype
         data = np.loadtxt(fp, dtype=dtype_)
         return cls.from_array(input_array=data, tz=tz)
+
+    @classmethod 
+    def from_iter(cls, gen: Iterable[DatetimeLike], dtype: Type, tz: Optional[datetime.tzinfo] = None):
+        """
+        
+        Create a DatetimeLikeArray object from an Iterable with DatetimeLike yields
+
+        Args:
+            gen (Iterable[DatetimeLike]): An iterable that yields DatetimeLike values
+            dtype (Type): Data type of the values in the file.
+            tz (datetime.tzinfo, optional): Timezone to assign to the loaded data.
+        
+        Returns:
+            DatetimeLikeArray: A new instance with timezone awareness.
+        """
+
+        def wrapper_gen(gen: Iterable[DatetimeLike]) -> Iterable[DatetimeLike]: 
+
+            for value in gen(): 
+                
+                # If it is timezone-aware, remove the timezone
+                if isinstance(value, datetime.datetime): 
+                    a = value.replace(tzinfo=None)
+                    
+                    yield a
+                
+                else: 
+                    yield value
+        
+        naive_array = np.fromiter(wrapper_gen(gen), dtype=dtype)
+        
+        if tz:
+            tz_offset_ = datetime.datetime.now(tz).utcoffset()
+            seconds_offset = tz_offset_.total_seconds() if tz_offset_ else 0
+            np_offset = np.timedelta64(int(np.abs(seconds_offset)), 's')
+            
+            if seconds_offset < 0:
+                naive_array += np_offset
+            else:
+                naive_array -= np_offset
+            
+            # Initialize an NDArray and populate with the datetime values
+            obj = super().__new__(cls, naive_array.shape, dtype)
+            obj[:] = naive_array
+            
+            # Set the timezone and offset of the array
+            obj.tz = tz
+            obj.tz_offset = tz_offset_ if tz_offset_ else datetime.timedelta(0)
+            return obj
+        
+        obj = super().__new__(cls, naive_array.shape, dtype)
+        obj[:] = naive_array
+        return obj
