@@ -9,6 +9,7 @@ import warnings
 import io 
 import csv
 import os
+import codecs
 
 from dataclasses import dataclass
 import numpy as np
@@ -148,8 +149,9 @@ class TimeSeries(Generic[TimeDeltaLike]):
                     yield from csv.DictReader(file, delimiter=",")
         
             if isinstance(fp, io.BytesIO):
-                fp.seek(0)
-                yield from csv.DictReader(io.TextIOWrapper(fp, encoding='utf-8'), delimiter=",")
+                # Use codecs, because decoding directly is an eager operation
+                fp.seek(0) 
+                yield from csv.DictReader(codecs.getreader("utf-8")(fp))
             
             if isinstance(fp, io.StringIO):
                 fp.seek(0)
@@ -162,7 +164,7 @@ class TimeSeries(Generic[TimeDeltaLike]):
                 if max_rows and i >= max_rows:
                     break
                 for col in dependent_var_cols: 
-                     yield dep_var_conversion(row[col]) 
+                    yield dep_var_conversion(row[col]) 
         
         # Generator for lazy times processing
         def process_times(): 
