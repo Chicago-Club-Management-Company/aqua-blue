@@ -241,7 +241,7 @@ class DatetimeLikeArray(np.ndarray):
 
         def wrapper_gen(gen): 
             
-            for value in gen(): 
+            for value in gen: 
                 
                 # If it is timezone-aware, remove the timezone
                 if isinstance(value, datetime.datetime): 

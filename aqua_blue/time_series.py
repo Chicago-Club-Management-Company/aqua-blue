@@ -154,23 +154,31 @@ class TimeSeries(Generic[TimeDeltaLike]):
             if isinstance(fp, io.StringIO):
                 fp.seek(0)
                 yield from csv.DictReader(fp, delimiter=",")
-    
-        # Processing the csv data
-        times_ = []
         
         # Generator for lazy dependent variable processing
-        def process(): 
+        def process_dep(): 
             reader = get_reader(fp)
             for i, row in enumerate(reader):
                 if max_rows and i >= max_rows:
                     break
-                times_.append(times_conversion(row[time_col]))
                 for col in dependent_var_cols: 
                      yield dep_var_conversion(row[col]) 
         
+        # Generator for lazy times processing
+        def process_times(): 
+            reader = get_reader(fp)
+            for i, row in enumerate(reader):
+                if max_rows and i >= max_rows:
+                    break 
+                yield times_conversion(row[time_col])
+        
+        dep = np.fromiter(process_dep(), dtype=float).reshape(-1, len(dependent_var_cols), order='C')
+        
+        t = DatetimeLikeArray.from_iter(process_times(), dtype=times_dtype)
+        
         return cls(
-            dependent_variable=np.fromiter(process(), dtype=float).reshape(-1, len(dependent_var_cols), order='C'), 
-            times=DatetimeLikeArray(times_, dtype=times_dtype)
+            dependent_variable=dep, 
+            times=t
         )
     
     def to_dict(self) -> TimeSeriesTypedDict:
