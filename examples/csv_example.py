@@ -32,6 +32,7 @@ def main():
     concatenated.save(
         fp=Path('predicted_goldstocks.csv'),
         header='DATE,X,Y,Z,A,B',
+        fmt=('%s', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f')
     )
 
 if __name__ == '__main__':
