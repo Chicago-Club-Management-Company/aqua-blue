@@ -4,7 +4,7 @@ from pathlib import Path
 def main(): 
     
     goldstocks = aqua_blue.time_series.TimeSeries.from_csv(
-        fp=Path('goldstocks.csv'), 
+        fp=Path('examples/goldstocks.csv'), 
         time_col='DATE',
         times_dtype='datetime64[s]',
         dependent_var_cols=['X', 'Y', 'Z', 'A', 'B'],
@@ -30,7 +30,7 @@ def main():
     concatenated = goldstocks >> prediction
 
     concatenated.save(
-        fp=Path('predicted_goldstocks.csv'),
+        fp=Path('examples/predicted_goldstocks.csv'),
         header='DATE,X,Y,Z,A,B',
         fmt=('%s', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f')
     )
