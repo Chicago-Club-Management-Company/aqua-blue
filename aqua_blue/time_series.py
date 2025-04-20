@@ -2,7 +2,7 @@
 Module defining the TimeSeries object
 """
 
-from typing import IO, Union, Generic, TypedDict, Sequence, List, Callable, Type, Optional, Iterable, Dict
+from typing import IO, Union, Generic, TypedDict, Sequence, List, Callable, Type, Optional, Iterable, Dict, Tuple
 from pathlib import Path
 import warnings
 
@@ -85,7 +85,7 @@ class TimeSeries(Generic[TimeDeltaLike]):
                 f"The shape has been changed from {(num_steps,)} to {self.dependent_variable.shape}",
             )
     
-    def save(self, fp: Union[IO, str, Path], header: str = "", delimiter=","):
+    def save(self, fp: Union[IO, str, Path], header: str = "", delimiter=",", fmt: Union[str, Tuple[str]] = '%s'):
         """
         Saves the time series data to a file.
         
@@ -93,13 +93,19 @@ class TimeSeries(Generic[TimeDeltaLike]):
             fp (Union[IO, str, Path]): File path or object where the TimeSeries instance will be saved.
             header (str, optional): An optional header. Defaults to an empty string.
             delimiter (str, optional): The delimiter used in the output file. Defaults to a comma.
+            fmt (Tuple(str), optional): Format specifier used for saving the data to fp. Defaults to '%s' (String representation)
         """
-        # This should work just fine as long as we are writing datetime objects in UTC.
+        
+        data = np.vstack((
+            self.times.astype('object'), 
+            self.dependent_variable.T.astype('object')
+        ), dtype='object').T
         
         np.savetxt(
             fp,
-            np.vstack((self.times, self.dependent_variable.T)).T,
+            data,
             delimiter=delimiter,
+            fmt=fmt,
             header=header,
             comments=""
         )
@@ -148,14 +154,17 @@ class TimeSeries(Generic[TimeDeltaLike]):
                 with open(fp, encoding='utf-8') as file:
                     yield from csv.DictReader(file, delimiter=",")
         
-            if isinstance(fp, io.BytesIO):
+            elif isinstance(fp, io.BytesIO):
                 # Use codecs, because decoding directly is an eager operation
                 fp.seek(0) 
                 yield from csv.DictReader(codecs.getreader("utf-8")(fp))
             
-            if isinstance(fp, io.StringIO):
+            elif isinstance(fp, io.StringIO):
                 fp.seek(0)
                 yield from csv.DictReader(fp, delimiter=",")
+            
+            else: 
+                raise FileNotFoundError()
         
         # Generator for lazy dependent variable processing
         def process_dep(): 
@@ -193,7 +202,7 @@ class TimeSeries(Generic[TimeDeltaLike]):
             dependent_variable=self.dependent_variable.tolist(),
             times=self.times.to_list()
         )
-
+    
     @property
     def timestep(self) -> TimeDeltaLike:
         """

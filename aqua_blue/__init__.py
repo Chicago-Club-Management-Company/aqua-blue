@@ -61,7 +61,7 @@ Here, we use both hyperbolic tangent (`tanh`) and the [error function](https://e
 ```
 """
 
-__version__ = "0.2.13"
+__version__ = "0.2.14"
 __authors__ = [
     "Jacob Jeffries",
     "Hrishikesh Belagali",
