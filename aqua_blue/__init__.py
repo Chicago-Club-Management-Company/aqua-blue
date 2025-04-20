@@ -36,7 +36,7 @@ Below is an example of inputting a `json` string as the training data, and outpu
 prediction. This is particularly useful for interfacing `aqua-blue` with already-existing systems.
 
 ```py
-.. include:: ../examples/json_example.py
+.. include:: ../examples/json-example.py
 ```
 
 ## 🏋 Explicit weights
@@ -58,6 +58,25 @@ Here, we use both hyperbolic tangent (`tanh`) and the [error function](https://e
 
 ```py
 .. include:: ../examples/activation-functions.py
+```
+
+## 🔗 HTTP Requests
+
+Below is an example of pulling csv file data from a resource URL using the [requests](https://pypi.org/project/requests/) library. 
+Here, we retrieve a time series of temperature data from [NCEI NOAA](https://www.ncei.noaa.gov/data/global-summary-of-the-day/access/2024/01001099999.csv)
+and use it for training and predicting temperatures.
+
+```py
+.. include:: ../examples/apireq-example.py
+```
+
+## 📁 Read from and write to CSV files
+
+Below is an example of parsing data from a csv file (`goldstocks.csv`) and writing it to a `TimeSeries` object, which is used for training and predictions. 
+The predictions are written to a new csv file (`predicted-goldstocks.csv`).
+
+```py
+.. include:: ../examples/csv-example.py
 ```
 """
 
