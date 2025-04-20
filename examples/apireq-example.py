@@ -34,7 +34,6 @@ def main():
     
     seed = int(time.time())
     generator = np.random.default_rng(seed)
-    print(seed)
     
     w_res = generator.uniform(
         low=-0.5,
@@ -62,7 +61,6 @@ def main():
     horizon = 5
     prediction = model.predict(horizon=horizon)
     prediction = normalizer.denormalize(prediction)
-    print(prediction.dependent_variable)
     
     concatenated = TRAIN_DATA >> prediction
 
