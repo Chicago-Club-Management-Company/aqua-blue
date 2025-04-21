@@ -172,3 +172,5 @@ cython_debug/
 
 scratch.py
 coverage.json
+examples/speech-data
+examples/speech-data.tar.gz
