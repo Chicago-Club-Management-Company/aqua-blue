@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+  release:
+    types: [published]
 
 jobs:
 
@@ -92,6 +94,7 @@ jobs:
           for file in examples/*.py; do python "$file"; done
 
   build:
+    if: github.event_name == 'release'
     needs:
       - prebuild
       - quickstart
@@ -121,6 +124,7 @@ jobs:
           path: dist/
 
   create-docs:
+    if: github.event_name == 'release'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -146,6 +150,7 @@ jobs:
           path: _build/
 
   deploy-docs:
+    if: github.event_name == 'release'
     needs:
       - create-docs
     runs-on: ubuntu-latest
@@ -172,6 +177,7 @@ jobs:
         uses: actions/deploy-pages@v4
 
   pypi-publish:
+    if: github.event_name == 'release'
     needs:
       - build
       - deploy-docs
@@ -193,7 +199,8 @@ jobs:
         uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc
 
   notify-discord:
-    needs: pypi-publish
+    if: github.event_name == 'release'
+    needs: deploy-docs
     runs-on: ubuntu-latest
     permissions:
       contents: read
