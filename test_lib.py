@@ -25,19 +25,20 @@ def cosine_sine_series():
         times=steps
     )
 
+
 @pytest.fixture
-def datetime_arr(): 
-    times_ = datetimelikearray.DatetimeLikeArray.from_array(
+def datetime_arr():
+
+    return datetimelikearray.DatetimeLikeArray.from_array(
         input_array=np.arange(
-            np.datetime64('2021-01-01T00:00:00'), 
-            np.datetime64('2021-01-20T00:00:00'), 
-            np.timedelta64(1, 'D'), 
-            dtype = 'datetime64[s]'
+            np.datetime64('2021-01-01T00:00:00'),
+            np.datetime64('2021-01-20T00:00:00'),
+            np.timedelta64(1, 'D'),
+            dtype='datetime64[s]'
         ),
         tz=ZoneInfo("America/New_York")
     )
 
-    return times_ 
 
 # TimeSeries
 def test_non_uniform_timestep_error():
@@ -168,6 +169,7 @@ def test_timeseries_slice_assignment():
     ts[:2] = new_ts
     assert np.all(ts.dependent_variable == np.array([[9, 9], [8, 8], [5, 6], [7, 8]]))
 
+
 # Datetime Integration Tests
 
 def test_datetime_time_series_from_list(cosine_sine_series):
@@ -185,6 +187,7 @@ def test_datetime_time_series_from_list(cosine_sine_series):
         times=[time_init + step * timedelta(days=1.0) for step in range(10)]
     )
 
+
 def test_datetime_time_series_from_array(cosine_sine_series):
     # Starting from a NumPy array of datetime objects
     time_init = datetime(
@@ -200,15 +203,17 @@ def test_datetime_time_series_from_array(cosine_sine_series):
         times=np.array([time_init + step * timedelta(days=1.0) for step in range(10)])
     )
 
+
 def test_datetime_writetolist(datetime_arr):
     list_series = datetime_arr.to_list()
     
-    time_init = datetime(2021, 1, 1, 0, 0, 0, tzinfo = ZoneInfo("America/New_York")) 
-    interval =  timedelta(days=1.0)
+    time_init = datetime(2021, 1, 1, 0, 0, 0, tzinfo=ZoneInfo("America/New_York"))
+    interval = timedelta(days=1.0)
     
     times = [time_init + step * interval for step in range(datetime_arr.size)]
     
     assert list_series == times 
+
 
 def test_datetime_fileio(datetime_arr): 
     with BytesIO() as buffer:
@@ -225,7 +230,7 @@ def datetime_series():
             np.datetime64('2021-01-01T00:00:00'), 
             np.datetime64('2021-01-20T00:00:00'), 
             np.timedelta64(1, 'D'), 
-            dtype = 'datetime64[s]'
+            dtype='datetime64[s]'
         ),
         tz=ZoneInfo("America/New_York")
     )
@@ -239,16 +244,18 @@ def datetime_series():
         times=times_
     )
 
+
 def from_iter_float():
     def gen(): 
         a = 0
         while a < 10: 
             yield a
-            a +=1
+            a += 1
     
     ts = datetimelikearray.DatetimeLikeArray.from_iter(gen, float)
     
     assert(ts == np.arange(10))
+
 
 def from_iter_naive(): 
     time_init = datetime(
@@ -268,6 +275,7 @@ def from_iter_naive():
     ts = datetimelikearray.DatetimeLikeArray.from_iter(gen, 'datetime64[s]')
     assert(ts == list(gen()))
 
+
 def from_iter_aware():
     time_init = datetime(
         year=2025,
@@ -286,52 +294,28 @@ def from_iter_aware():
     ts = datetimelikearray.DatetimeLikeArray.from_iter(gen, 'datetime64[s]', tz=ZoneInfo("America/Chicago"))
     assert(ts.to_list() == list(gen()))
 
-def csv_from_string_io():
-    # grab csv data from somewhere online
-    req = requests.get("https://www.ncei.noaa.gov/data/global-summary-of-the-day/access/2024/01001099999.csv")
-    
-    # time col probably better referenced by name
-    # timesteps aren't uniform after row 87
-    time_col = "DATE"
-    dependent_var_cols = ["TEMP", "WDSP"]
-    max_rows = 87
-    
-    
-    # write txt response to StringIO object so we can use it like an fp
-    with StringIO() as file:
-        txt = req.text
-        file.write(txt)
-        file.seek(0)
-    
-        ts = time_series.TimeSeries.from_csv(
-            fp=file,
-            time_col=time_col,
-            dependent_var_cols=dependent_var_cols,
-            times_dtype='datetime64[s]',
-            max_rows=87,
-        )
 
-def csv_from_bytesio():
+@pytest.mark.parametrize("io_type", (StringIO, BytesIO))
+def csv_from_io(io_type):
+
     # grab csv data from somewhere online
     req = requests.get("https://www.ncei.noaa.gov/data/global-summary-of-the-day/access/2024/01001099999.csv")
-    
+
     # time col probably better referenced by name
     # timesteps aren't uniform after row 87
     time_col = "DATE"
     dependent_var_cols = ["TEMP", "WDSP"]
     max_rows = 87
-    
-    
-    # write txt response to StringIO object so we can use it like an fp
-    with BytesIO() as file:
-        txt = req.text
-        file.write(txt)
+
+    # write txt response to IO object, so we can use it like an fp
+    with io_type() as file:
+        file.write(req.text)
         file.seek(0)
-    
-        ts = time_series.TimeSeries.from_csv(
+
+        _ = time_series.TimeSeries.from_csv(
             fp=file,
             time_col=time_col,
             dependent_var_cols=dependent_var_cols,
             times_dtype='datetime64[s]',
-            max_rows=87,
+            max_rows=max_rows,
         )

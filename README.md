@@ -14,6 +14,21 @@ Lightweight and basic reservoir computing library
 - A blue ocean of data, aka a reservoir 💧
 - A very fancy cat named Blue 🐾
 
+## 🐜 Found a bug?
+
+Please open an issue [here](https://github.com/Chicago-Club-Management-Company/aqua-blue/issues) if you found a bug!
+The easier it is to reproduce the bug, the faster we will find a solution to the problem. Please consider including the
+following info in your issue:
+
+- Steps to reproduce
+- Expected and actual behavior
+- Version info, OS, etc.
+
+## 🔧 Contributing
+
+Please see [CONTRIBUTING.md](https://github.com/Chicago-Club-Management-Company/aqua-blue/blob/main/CONTRIBUTING.md)
+for instructions on how to contribute to `aqua-blue` ☺
+
 ## 📥 Installation
 
 `aqua-blue` is on PyPI, and can therefore be installed with `pip`:

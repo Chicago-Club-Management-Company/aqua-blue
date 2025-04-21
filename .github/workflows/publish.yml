@@ -34,7 +34,13 @@ jobs:
           pip install .[examples]
       - name: Test with pytest
         run: >-
-          pytest -W error
+          coverage run -m pytest -W error
+      - name: Create code coverage report
+        run: >-
+          coverage json
+      - name: Print out code coverage percent
+        run: >-
+          echo "Coverage: $(jq '.totals.percent_covered' coverage.json)%"
       - name: Lint with ruff (dev)
         run: >-
           ruff check aqua_blue/

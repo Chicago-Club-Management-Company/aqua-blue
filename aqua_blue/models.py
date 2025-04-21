@@ -9,7 +9,7 @@ Classes:
     - Model: Represents an Echo State Network (ESN)-based model that learns from
       input time series data and makes future predictions.
 """
-
+import logging
 from dataclasses import dataclass, field
 from typing import Union, Generic
 
@@ -21,6 +21,9 @@ from .time_series import TimeSeries
 from .datetimelikearray import DatetimeLikeArray, DatetimeLike, TimeDeltaLike
 
 import datetime
+
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -95,7 +98,7 @@ class Model(Generic[DatetimeLike, TimeDeltaLike]):
             raise ValueError(f"warmup must be smaller than number of timesteps ({len(input_time_series)})")
 
         time_series_array = input_time_series.dependent_variable
-        independent_variables = np.zeros((time_series_array.shape[0]-1, self.reservoir.reservoir_dimensionality))
+        independent_variables = np.zeros((time_series_array.shape[0] - 1, self.reservoir.reservoir_dimensionality))
 
         for i in range(independent_variables.shape[0]):
             independent_variables[i] = self.reservoir.update_reservoir(time_series_array[i])
@@ -107,9 +110,13 @@ class Model(Generic[DatetimeLike, TimeDeltaLike]):
 
         self.readout.train(independent_variables, dependent_variables)
         self.timestep = input_time_series.timestep
+        logging.debug(f"{self.__class__.__name__}.timestep set to {self.timestep}")
         self.final_time = input_time_series.times[-1]
+        logging.debug(f"{self.__class__.__name__}.final_time set to {self.final_time}")
         self.tz = input_time_series.times.tz
+        logging.debug(f"{self.__class__.__name__}.tz set to {self.tz}")
         self.times_dtype = input_time_series.times.dtype
+        logging.debug(f"{self.__class__.__name__}.times_detype set to {self.times_dtype}")
         self.initial_guess = time_series_array[-1, :]
 
     def predict(self, horizon: int) -> TimeSeries:
@@ -148,7 +155,7 @@ class Model(Generic[DatetimeLike, TimeDeltaLike]):
         if isinstance(self.final_time, np.datetime64):
             assert isinstance(self.timestep, np.timedelta64)
 
-        times_ = DatetimeLikeArray.from_array(
+        times = DatetimeLikeArray.from_array(
             np.arange(
                 start=self.final_time + self.timestep,
                 stop=self.final_time + (horizon + 1) * self.timestep,
@@ -160,5 +167,5 @@ class Model(Generic[DatetimeLike, TimeDeltaLike]):
 
         return TimeSeries(
             dependent_variable=predictions,
-            times=times_
+            times=times
         )

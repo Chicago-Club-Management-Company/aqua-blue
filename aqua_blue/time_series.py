@@ -2,9 +2,10 @@
 Module defining the TimeSeries object
 """
 
-from typing import IO, Union, Generic, TypedDict, Sequence, List, Callable, Type, Optional, Iterable, Dict
+from typing import IO, Union, Generic, TypedDict, Sequence, List, Callable, Type, Optional, Iterable, Dict, Tuple
 from pathlib import Path
 import warnings
+import logging
 
 import io 
 import csv
@@ -19,6 +20,10 @@ from dateutil import parser
 
 from .datetimelikearray import DatetimeLikeArray, TimeDeltaLike, DatetimeLike
 
+
+logger = logging.getLogger(__name__)
+
+
 # Default times_conversion function
 def parse_time(s: str):
     try: 
@@ -26,6 +31,7 @@ def parse_time(s: str):
         return n
     except ValueError:
         return parser.parse(s)
+
 
 class ShapeChangedWarning(Warning):
     """
@@ -65,6 +71,7 @@ class TimeSeries(Generic[TimeDeltaLike]):
             dtype_ = 'datetime64[s]'
         else:
             dtype_ = np.dtype(type(self.times[0]))
+        logging.info(f"times dtype set to {dtype_}")
         
         self.times = DatetimeLikeArray(self.times, dtype=dtype_)
         timesteps = np.diff(self.times)
@@ -76,6 +83,7 @@ class TimeSeries(Generic[TimeDeltaLike]):
         
         if not isinstance(self.dependent_variable, np.ndarray):
             self.dependent_variable = np.array(self.dependent_variable)
+            logging.debug(f"{self.__class__.__name__}.dependent_variable converted to {type(self.dependent_variable)}")
         
         if len(self.dependent_variable.shape) == 1:
             num_steps = len(self.dependent_variable)
@@ -85,7 +93,7 @@ class TimeSeries(Generic[TimeDeltaLike]):
                 f"The shape has been changed from {(num_steps,)} to {self.dependent_variable.shape}",
             )
     
-    def save(self, fp: Union[IO, str, Path], header: str = "", delimiter=","):
+    def save(self, fp: Union[IO, str, Path], header: str = "", delimiter=",", fmt: Union[str, Tuple[str]] = '%s'):
         """
         Saves the time series data to a file.
         
@@ -93,13 +101,19 @@ class TimeSeries(Generic[TimeDeltaLike]):
             fp (Union[IO, str, Path]): File path or object where the TimeSeries instance will be saved.
             header (str, optional): An optional header. Defaults to an empty string.
             delimiter (str, optional): The delimiter used in the output file. Defaults to a comma.
+            fmt (Tuple(str), optional): Format specifier used for saving the data to fp. Defaults to '%s' (String representation)
         """
-        # This should work just fine as long as we are writing datetime objects in UTC.
+        
+        data = np.vstack((
+            self.times.astype('object'), 
+            self.dependent_variable.T.astype('object')
+        ), dtype='object').T
         
         np.savetxt(
             fp,
-            np.vstack((self.times, self.dependent_variable.T)).T,
+            data,
             delimiter=delimiter,
+            fmt=fmt,
             header=header,
             comments=""
         )
@@ -124,7 +138,7 @@ class TimeSeries(Generic[TimeDeltaLike]):
         times_conversion: Callable[[str], DatetimeLike] = parse_time, 
         dep_var_conversion: Callable[[str], float] = float,
         max_rows: Optional[int] = 0
-        ):
+    ):
         """
         Loads time series data from a CSV file.
         
@@ -141,21 +155,24 @@ class TimeSeries(Generic[TimeDeltaLike]):
             TimeSeries: A TimeSeries instance populated by data from the csv file.
         """
         # Helper generator to get a csv.DictReader source from different sources
-        def get_reader(fp) -> Iterable[Dict]:
+        def get_reader(fp_) -> Iterable[Dict]:
             
             # Checking the input format
-            if isinstance(fp, Path) and os.path.isfile(fp):
-                with open(fp, encoding='utf-8') as file:
+            if isinstance(fp_, Path) and os.path.isfile(fp_):
+                with open(fp_, encoding='utf-8') as file:
                     yield from csv.DictReader(file, delimiter=",")
         
-            if isinstance(fp, io.BytesIO):
+            elif isinstance(fp_, io.BytesIO):
                 # Use codecs, because decoding directly is an eager operation
-                fp.seek(0) 
-                yield from csv.DictReader(codecs.getreader("utf-8")(fp))
+                fp_.seek(0)
+                yield from csv.DictReader(codecs.getreader("utf-8")(fp_))
             
-            if isinstance(fp, io.StringIO):
-                fp.seek(0)
+            elif isinstance(fp, io.StringIO):
+                fp_.seek(0)
                 yield from csv.DictReader(fp, delimiter=",")
+            
+            else: 
+                raise FileNotFoundError()
         
         # Generator for lazy dependent variable processing
         def process_dep(): 
@@ -193,7 +210,7 @@ class TimeSeries(Generic[TimeDeltaLike]):
             dependent_variable=self.dependent_variable.tolist(),
             times=self.times.to_list()
         )
-
+    
     @property
     def timestep(self) -> TimeDeltaLike:
         """
@@ -246,7 +263,6 @@ class TimeSeries(Generic[TimeDeltaLike]):
             times=self.times
         )
     
-    
     def __sub__(self, other):
         """
         Subtracts two TimeSeries instances element-wise.
@@ -265,7 +281,6 @@ class TimeSeries(Generic[TimeDeltaLike]):
         Concatenates two non-overlapping TimeSeries instances.
         """
         if self.times[-1] >= other.times[0]:
-            print(self.times[-1], other.times[0])
             raise ValueError("Can only concatenate TimeSeries instances with non-overlapping time values")
         return TimeSeries(
             dependent_variable=np.vstack((self.dependent_variable, other.dependent_variable)),

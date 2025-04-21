@@ -14,6 +14,7 @@ Classes:
 from dataclasses import dataclass, field
 from abc import ABC, abstractmethod
 from typing import Optional, Callable
+import logging
 
 import numpy as np
 
@@ -22,6 +23,9 @@ from .utilities import make_sparse, set_spectral
 
 ActivationFunction = Callable[[np.typing.NDArray[np.floating]], np.typing.NDArray[np.floating]]
 """activation function, taking in a numpy array and returning a numpy array of the same shape"""
+
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -165,8 +169,12 @@ class DynamicalReservoir(Reservoir):
 
         if self.sparsity:
             self.w_res = make_sparse(self.w_res, self.sparsity, self.generator)
+        if logger.isEnabledFor(logging.DEBUG):
+            logging.debug(f"{self.__class__.__name__}.w_res sparsity set to {1.0 - self.w_res.astype(bool).mean():.2%}")
 
         self.w_res = set_spectral(self.w_res, self.spectral_radius)
+        if logger.isEnabledFor(logging.DEBUG):
+            logging.debug(f"{self.__class__.__name__}.w_res spectral radius set to {np.linalg.norm(self.w_res)}")
         
         self.res_state = np.zeros(self.reservoir_dimensionality)
 

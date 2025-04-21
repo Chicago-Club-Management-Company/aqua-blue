@@ -13,8 +13,12 @@ Classes:
 
 from dataclasses import dataclass, field
 from abc import ABC, abstractmethod
+import logging
 
 import numpy as np
+
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -117,6 +121,13 @@ class LinearReadout(Readout):
                 The target output values corresponding to the reservoir states.
         """
         coeff = np.linalg.pinv(independent_variables, rcond=self.rcond) @ dependent_variables
+        if logger.isEnabledFor(logging.INFO):
+            predictions = independent_variables @ coeff
+            inaccuracy = np.linalg.norm(predictions - dependent_variables)
+            inaccuracy /= np.linalg.norm(dependent_variables - dependent_variables.mean(axis=0))
+            pcc = 1.0 - inaccuracy ** 2
+            logging.info(f"{self.__class__.__name__} layer trained. Inaccuracy = {inaccuracy} and pcc = {pcc}")
+
         self.coefficients = coeff.T
 
     def reservoir_to_output(self, reservoir_state: np.typing.NDArray[np.floating]) -> np.typing.NDArray[np.floating]:

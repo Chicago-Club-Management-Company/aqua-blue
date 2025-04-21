@@ -27,7 +27,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
-    "numpy ~= 2.0.2",
+    "numpy>=2.0,<2.2",
     "tzdata~=2025.1",
     "python-dateutil~=2.9.0.post0",
 ]
@@ -43,11 +43,12 @@ dev = [
     "mypy~=1.13.0",
     "pdoc~=15.0.1",
     "types-python-dateutil~=2.9.0.20241206",
-    "requests~=2.32.3"
+    "coverage~=7.8.0"
 ]
 examples = [
     "scipy~=1.13.1", 
-    "matplotlib~=3.9.4"
+    "matplotlib~=3.9.4",
+    "requests~=2.32.3"
 ]
 
 [tool.hatch.version]
