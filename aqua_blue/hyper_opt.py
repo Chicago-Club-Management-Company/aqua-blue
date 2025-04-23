@@ -6,6 +6,7 @@ from numpy.typing import NDArray
 
 from dataclasses import dataclass, field
 from enum import Enum
+import warnings
 
 from .time_series import TimeSeries
 from .models import Model
@@ -78,7 +79,7 @@ def default_loss(mp: ModelParams) -> Callable[[HyperParams], Output]:
         try: 
             model.train(normalized_time_series)
         except np.linalg.LinAlgError:
-            print('SVD Error in Training')
+            warnings.warn('SVD Error in Training', RuntimeWarning)
             return { 
                 'loss': 1000, 
                 'status': hyperopt.STATUS_FAIL
@@ -87,7 +88,7 @@ def default_loss(mp: ModelParams) -> Callable[[HyperParams], Output]:
         try: 
             prediction = model.predict(horizon = mp.horizon)
         except np.linalg.LinAlgError:
-            print('SVD Error in Training')
+            warnings.warn('SVD Error in Training', RuntimeWarning)
             return { 
                 'loss': 1000, 
                 'status': hyperopt.STATUS_FAIL
@@ -119,6 +120,8 @@ class Optimizer:
     
     def optimize(self) -> HyperParams:
         
+        warnings.warn("This feature is currently experimental and may be unstable or subject to change. Feedback is welcome to help improve future versions.", UserWarning)
+
         return hyperopt.fmin(
             fn=self.fn, 
             space=self.space,
