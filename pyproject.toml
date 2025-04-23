@@ -30,7 +30,7 @@ dependencies = [
     "numpy>=2.0,<2.2",
     "tzdata~=2025.1",
     "python-dateutil~=2.9.0.post0",
-    "hyperopt~=0.2.7"
+    "setuptools~=79.0.0"
 ]
 
 [project.urls]

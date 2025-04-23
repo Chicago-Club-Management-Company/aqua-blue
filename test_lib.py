@@ -224,7 +224,7 @@ def test_datetime_fileio(datetime_arr):
     assert loaded_series == datetime_arr
 
 
-def datetime_series(): 
+def test_datetime_series():
     times_ = datetimelikearray.DatetimeLikeArray.from_array(
         input_array=np.arange(
             np.datetime64('2021-01-01T00:00:00'), 
@@ -239,44 +239,42 @@ def datetime_series():
 
     dependent_variables = np.vstack((np.cos(steps), np.sin(steps))).T
     
-    return time_series.TimeSeries(
+    _ = time_series.TimeSeries(
         dependent_variable=dependent_variables, 
         times=times_
     )
 
 
-def from_iter_float():
+def test_from_iter_float():
     def gen(): 
         a = 0
         while a < 10: 
             yield a
             a += 1
     
-    ts = datetimelikearray.DatetimeLikeArray.from_iter(gen, float)
+    ts = datetimelikearray.DatetimeLikeArray.from_iter(gen(), float)
     
     assert(ts == np.arange(10))
 
 
-def from_iter_naive(): 
+def test_from_iter_naive():
     time_init = datetime(
         year=2025,
         month=3,
         day=1,
-        hour=12,
-        tzinfo=ZoneInfo("UTC")
+        hour=12
     )
-    
-    def gen(): 
-        i = 0 
-        while i < 10: 
-            yield time_init + timedelta(seconds=3600*i)
+
+    def gen():
+        i = 0
+        while i < 10:
+            yield time_init + timedelta(seconds=3600 * i)
             i += 1
-    
-    ts = datetimelikearray.DatetimeLikeArray.from_iter(gen, 'datetime64[s]')
-    assert(ts == list(gen()))
 
+    ts = datetimelikearray.DatetimeLikeArray.from_iter(gen(), 'datetime64[s]')
+    assert (ts.to_list() == list(gen()))
 
-def from_iter_aware():
+def test_from_iter_aware():
     time_init = datetime(
         year=2025,
         month=3,
@@ -291,12 +289,12 @@ def from_iter_aware():
             yield time_init + timedelta(seconds=3600*i)
             i += 1
     
-    ts = datetimelikearray.DatetimeLikeArray.from_iter(gen, 'datetime64[s]', tz=ZoneInfo("America/Chicago"))
+    ts = datetimelikearray.DatetimeLikeArray.from_iter(gen(), 'datetime64[s]', tz=ZoneInfo("America/Chicago"))
     assert(ts.to_list() == list(gen()))
 
 
 @pytest.mark.parametrize("io_type", (StringIO, BytesIO))
-def csv_from_io(io_type):
+def test_csv_from_io(io_type):
 
     # grab csv data from somewhere online
     req = requests.get("https://www.ncei.noaa.gov/data/global-summary-of-the-day/access/2024/01001099999.csv")
@@ -309,7 +307,10 @@ def csv_from_io(io_type):
 
     # write txt response to IO object, so we can use it like an fp
     with io_type() as file:
-        file.write(req.text)
+        content = req.text
+        if io_type is BytesIO:
+            content = req.text.encode("utf-8")
+        file.write(content)
         file.seek(0)
 
         _ = time_series.TimeSeries.from_csv(
