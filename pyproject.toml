@@ -51,6 +51,9 @@ examples = [
     "matplotlib~=3.9.4",
     "requests~=2.32.3"
 ]
+hyper = [ 
+    "hyperopt~=0.2.7"
+]
 
 [tool.hatch.version]
 path = "aqua_blue/__init__.py"

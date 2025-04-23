@@ -1,5 +1,10 @@
+"""
+Module providing hyperparameter optimization functionality. 
+
+This module allows for hyperparameter optimization of aqua-blue models by wrapping around hyperopt's optimization algorithms. 
+"""
+
 import numpy as np
-import hyperopt
 
 from typing import Optional, Callable, TypedDict, Literal, Union
 from numpy.typing import NDArray
@@ -14,11 +19,18 @@ from .reservoirs import DynamicalReservoir
 from .readouts import LinearReadout
 from .utilities import Normalizer
 
+try: 
+   import hyperopt # type: ignore
+except ModuleNotFoundError:
+    raise ModuleNotFoundError('Build dependencies for hyperparameter optimization not found! Make sure to install it using pip install .[hyper]')
+
 # Hyperparameter Optimization Functionality 
 
 HyperoptStatus = Literal["ok", "fail"]
 
 # Class Definitions 
+
+# Enum Class for optimization algorithms
 class Algo(Enum):
     TREE_PARZEN_ESTIMATOR = hyperopt.tpe.suggest
     GRID_SEARCH = hyperopt.rand.suggest
@@ -30,17 +42,39 @@ class ModelParams:
     input_dimensionality: int
     reservoir_dimensionality: int
     horizon: int
-    actual_future: NDArray
-    w_in: Optional[NDArray] = None
-    w_res: Optional[NDArray] = None
+    actual_future: NDArray[np.floating]
+    w_in: Optional[NDArray[np.floating]] = None
+    w_res: Optional[NDArray[np.floating]] = None
+    
+    """ 
+    Dataclass to store model parameters
 
+    Args: 
+        time_series (TimeSeries): The unnormalized time series of interest 
+        input_dimensionality (int): The dimension of the input 
+        reservoir_dimensionality (int): The dimension of the reservoir
+        horizon (int): The number of steps to forecast into the future
+        actual_future (NDArray[np.floating]): The actual future used to calculate performance metrics
+        w_in (NDArray[np.floating]): Explicit input weight matrix. Defaults to None
+        w_res (NDArray[np.floating]): Explicit reservoir weight matrix. Defaults to None
+    """
 class HyperParams(TypedDict): 
+    """ 
+    TypedDict form of parameter objects
+
+    Hyperopt objective functions take dicts
+    """
     spectral_radius: hyperopt.pyll.base.Apply
     leaking_rate: hyperopt.pyll.base.Apply
     sparsity: hyperopt.pyll.base.Apply
     rcond: hyperopt.pyll.base.Apply
 
 class Output(TypedDict, total=False): 
+    """ 
+    TypedDict form of output objects 
+
+    Hyperopt objective functions output dicts
+    """
     loss: float
     status: HyperoptStatus
 
@@ -118,6 +152,17 @@ class Optimizer:
     algo: Algo = Algo.GRID_SEARCH
     trials: Optional[hyperopt.Trials] = None
     
+    """ 
+    Dataclass to store optimizer parameters 
+    
+    Args: 
+        max_evals (int): The number of evaluations to run the optimizer for
+        fn (ObjectiveLike): The objective function to be minimized 
+        space (HyperParams): An object containing the hyperparameter names and their search spaces. Defaults to default_space
+        algo (Algo): The optimization algorithm used. Defaults to GRID_SEARCH
+        trials (hyperopt.Trials): A trials object to store output data
+    """
+
     def optimize(self) -> HyperParams:
         
         warnings.warn("This feature is currently experimental and may be unstable or subject to change. Feedback is welcome to help improve future versions.", UserWarning)
