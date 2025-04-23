@@ -33,7 +33,7 @@ def main():
         actual_future=np.vstack((np.cos(p_times) ** 2, np.sin(p_times))).T
     )
 
-    optimizer = aqua_blue.hyper_opt.Optimizer(fn=aqua_blue.hyper_opt.default_loss(mp), max_evals=100)
+    optimizer = aqua_blue.hyper_opt.Optimizer(fn=aqua_blue.hyper_opt.default_loss(mp), max_evals=1000)
     best = optimizer.optimize()
 
     print(best)

@@ -121,6 +121,7 @@ __authors__ = [
     "Hrishikesh Belagali",
     "Avik Thumati",
     "Ameen Mahmood",
+    "Jackson Henry",
     "Samuel Josephs",
 ]
 __author_emails__ = [
@@ -128,6 +129,7 @@ __author_emails__ = [
     "hrishikesh.belagali@ccmc.global",
     "avik.thumati@ccmc.global",
     "ameen.mahmood@ccmc.global",
+    "jackson.henry@ccmc.global",
     "samuel.josephs@ccmc.global"
 ]
 __url__ = "https://github.com/Chicago-Club-Management-Company/aqua-blue"
