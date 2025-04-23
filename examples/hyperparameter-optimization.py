@@ -32,7 +32,6 @@ def main():
         horizon=horizon,
         actual_future=np.vstack((np.cos(p_times) ** 2, np.sin(p_times))).T
     )
-    
     optimizer = aqua_blue.hyper_opt.Optimizer(fn=aqua_blue.hyper_opt.default_loss(mp), max_evals=100)
     best = optimizer.optimize()
 
