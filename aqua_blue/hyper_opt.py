@@ -20,7 +20,7 @@ from .readouts import LinearReadout
 from .utilities import Normalizer
 
 try: 
-   import hyperopt
+   import hyperopt # type: ignore
 except ModuleNotFoundError:
     raise ModuleNotFoundError('Build dependencies for hyperparameter optimization not found! Make sure to install it using pip install .[hyper]')
 
