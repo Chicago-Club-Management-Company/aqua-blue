@@ -115,7 +115,7 @@ For my favorite video about logging in Python, see a wonderful video below by [m
 
 """
 
-__version__ = "0.2.17"
+__version__ = "0.2.18"
 __authors__ = [
     "Jacob Jeffries",
     "Hrishikesh Belagali",
@@ -137,3 +137,4 @@ from . import reservoirs as reservoirs
 from . import readouts as readouts
 from . import models as models
 from . import time_series as time_series
+from . import hyper_opt as hyper_opt
