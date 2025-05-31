@@ -172,3 +172,10 @@ cython_debug/
 
 scratch.py
 coverage.json
+
+# Environment files
+.env.local
+.env.*.local
+
+#logs
+*.log

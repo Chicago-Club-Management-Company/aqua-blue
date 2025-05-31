@@ -47,12 +47,21 @@ dev = [
     "coverage~=7.8.0"
 ]
 examples = [
-    "scipy~=1.13.1", 
+    "scipy>=1.13.1", 
     "matplotlib~=3.9.4",
     "requests~=2.32.3",
     "torch~=2.7.0",
     "scikit-learn~=1.6.1",
     "aqua-blue-hyperopt~=0.0.3"
+]
+price_prediction = [
+    "websockets~=13.1",
+    "aiohttp~=3.11.11", 
+    "asyncio-mqtt~=0.16.2",
+    "python-dotenv~=1.0.0",
+    "matplotlib~=3.9.4",
+    "pandas~=2.2.3",
+    "boto3~=1.35.0"
 ]
 
 [tool.hatch.version]
